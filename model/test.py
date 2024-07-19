@@ -1,10 +1,12 @@
-from model.state import Result, Results, State
+from model.state import Event, Result, Results, State
 
 from model.markets import Market, Markets, Groups
 
 import model.simulator as simulator
 
-import copy, json, os, urllib.request
+import model.solver as solver
+
+import copy, json, urllib.request
 
 DriftMultipliers={
     "ENG1": 0.005,
@@ -25,14 +27,53 @@ DriftMultipliers={
     "SPA2": 0.01
 }
 
+SolverParams={"seed": 22682,
+              "generations": 250,
+              "decay": 2,
+              "factors": {"home_away_bias": 1.3,
+                          "draw_max": 0.3,
+                          "draw_curvature": -0.75}}
+
 SimParams={"seed": 22682,
            "paths": 10000}
 
 def fetch_teams(leaguename,
-                 domainname="outrights.net"):
+                domainname="outrights.net"):
     url="https://teams.%s/list-teams?league=%s" % (domainname,
                                                    leaguename)
     return json.loads(urllib.request.urlopen(url).read())
+    
+def fetch_events(leaguename,
+                 domainname="outrights.net"):
+    url="https://events.%s/list-events?league=%s" % (domainname,
+                                                     leaguename)
+    return [Event(event)
+            for event in json.loads(urllib.request.urlopen(url).read())]
+    
+def filter_training_set(leaguename, teams, events, limit=6):
+    class Counter(dict):
+        def __init__(self, teams):
+            dict.__init__(self, {team["name"]:0
+                                 for team in teams})
+        def add(self, event):
+            for teamname in event["name"].split(" vs "):
+                self[teamname]+=1
+        def is_complete(self, limit):
+            for k, v in self.items():
+                if v < limit:
+                    return False
+            return True
+    counter, trainingset = Counter(teams), []
+    for event in reversed(sorted(events,
+                                 key=lambda x: "%s/%s" % (x["date"],
+                                                          x["name"]))):
+        trainingset.append(event)
+        counter.add(event)
+        if counter.is_complete(limit):
+            return trainingset
+    if trainingset==[]:
+        raise RuntimeError("%s no training set" % leaguename)
+    return trainingset
 
 def init_sim_request(league, ratings, state, markets, params):
     def init_team(team, ratings):
@@ -67,51 +108,27 @@ def init_sim_request(league, ratings, state, markets, params):
 
 if __name__ == "__main__":
     leaguename="ENG2"
-    params=SimParams
-    driftmultipliers=DriftMultipliers
-    teams, deductions = (fetch_teams(leaguename), {})
-    def init_results(results):
-        return Results([Result(result)
-                        for result in results])
-    results=init_results([])
+    teams, events = (fetch_teams(leaguename),
+                     fetch_events(leaguename))
+    trainingset=filter_training_set(leaguename=leaguename,
+                                    teams=teams,
+                                    events=events)
+    solver_request={"teamnames": [team["name"]
+                                  for team in teams],
+                    "trainingset": trainingset,
+                    "params": SolverParams}
+    solver_resp=solver.solve(**solver_request)
+    print (solver_resp["ratings"])
+    print (solver_resp["factors"])
+    print (solver_resp["error"])
+    deductions={}
+    results=[]
     state=State.initialise(leaguename=leaguename,
                            teams=teams,
                            deductions=deductions,
-                           results=results)
+                           results=Results([Result(result)
+                                            for result in results]))
     state.validate(leaguename, teams)
-    ratings={
-        "ratings": {
-            "Blackburn": -0.2947580837731432,
-            "Bristol City": -0.4854565205933645,
-            "Burnley": 1.8551391542498676,
-            "Cardiff": -0.9433556160227132,
-            "Coventry": -0.13769257302350726,
-            "Derby": -0.2504512997707219,
-            "Hull": -0.04381537490473129,
-            "Leeds": 1.189810958488093,
-            "Luton": 1.245348955441433, # manually tweaked
-            "Middlesbrough": 0.05787725491426396,
-            "Millwall": -0.6508381469056274,
-            "Norwich": 0.28408264559076696,
-            "Oxford": -0.42571338563576894,
-            "Plymouth": -0.7962569230992319,
-            "Portsmouth": -0.1556893175728399,
-            "Preston": -0.7695992246990699,
-            "QPR": -0.27455613754060504,
-            "Sheffield Utd": -0.177289477437231,
-            "Sheffield Weds": -0.4982355217878988,
-            "Stoke": -0.2597038358726272,
-            "Sunderland": -0.4909097488482811,
-            "Swansea": -0.4582666402060736,
-            "Watford": -0.5719227871710468,
-            "West Brom": 0.0522516461800584
-        },
-        "factors": {
-            "home_away_bias": 1.1996634009194602,
-            "draw_max": 0.29102084765665415,
-            "draw_curvature": -0.8564836281252888
-        }        
-    }
     allmarkets=[{"league": "ENG2",
                  "name": "Winner",
                  "payoff": "1|23x0"}]
@@ -124,12 +141,12 @@ if __name__ == "__main__":
     for groupname, markets in groups.items():
         groupteams=markets[0].teams(teams)
         state["table"].update_status(groupteams)
-        league={"drift_multiplier": driftmultipliers[leaguename]}
+        league={"drift_multiplier": DriftMultipliers[leaguename]}
         simreq=init_sim_request(league=league,
-                                ratings=ratings,
+                                ratings=solver_resp,
                                 state=state,
                                 markets=markets,
-                                params=params)
+                                params=SimParams)
         simresp=simulator.simulate_marks(**simreq)
         marks+=simresp["marks"]
     print (marks)
