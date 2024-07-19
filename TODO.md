@@ -1,5 +1,6 @@
 ### short
 
+- `live` handling
 - pass leaguename to test.py
 - ability to constrain ratings
 
