@@ -1,5 +1,7 @@
 import model.solver as solver
 
+from model.state import Event
+
 import json, urllib.request
 
 SolverParams={"seed": 22682,
@@ -9,33 +11,11 @@ SolverParams={"seed": 22682,
                           "draw_max": 0.3,
                           "draw_curvature": -0.75}}
 
-TrainingSetSize=6
-
 def fetch_teams(leaguename,
                 domainname="outrights.net"):
     url="https://teams.%s/list-teams?league=%s" % (domainname,
                                                    leaguename)
     return json.loads(urllib.request.urlopen(url).read())
-
-class Event(dict):
-
-    def __init__(self, event):
-        dict.__init__(self, event)
-
-    @property
-    def best_prices(self, sources="fd|oc".split("|")):
-        for source in sources:
-            if source in self["prices"]:
-                return self["prices"][source]
-        return None
-        
-    @property
-    def probabilities(self):                      
-        probs=[1/price
-               for price in self.best_prices]
-        overround=sum(probs)
-        return [prob/overround
-                for prob in probs]
     
 def fetch_events(leaguename,
                  domainname="outrights.net"):
@@ -44,23 +24,19 @@ def fetch_events(leaguename,
     return [Event(event)
             for event in json.loads(urllib.request.urlopen(url).read())]
     
-class Counter(dict):
-
-    def __init__(self, teams):
-        dict.__init__(self, {team["name"]:0
-                             for team in teams})
-
-    def add(self, event):
-        for teamname in event["name"].split(" vs "):
-            self[teamname]+=1
-
-    def is_complete(self, limit):
-        for k, v in self.items():
-            if v < limit:
-                return False
-        return True
-
-def filter_training_set(leaguename, teams, events, limit=TrainingSetSize):
+def filter_training_set(leaguename, teams, events, limit=6):
+    class Counter(dict):
+        def __init__(self, teams):
+            dict.__init__(self, {team["name"]:0
+                                 for team in teams})
+        def add(self, event):
+            for teamname in event["name"].split(" vs "):
+                self[teamname]+=1
+        def is_complete(self, limit):
+            for k, v in self.items():
+                if v < limit:
+                    return False
+            return True
     counter, trainingset = Counter(teams), []
     for event in reversed(sorted(events,
                                  key=lambda x: "%s/%s" % (x["date"],

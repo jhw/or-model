@@ -1,5 +1,25 @@
 ResultSources="fd|bbc|tf".split("|")
 
+class Event(dict):
+
+    def __init__(self, event):
+        dict.__init__(self, event)
+
+    @property
+    def best_prices(self, sources="fd|oc".split("|")):
+        for source in sources:
+            if source in self["prices"]:
+                return self["prices"][source]
+        return None
+        
+    @property
+    def probabilities(self):                      
+        probs=[1/price
+               for price in self.best_prices]
+        overround=sum(probs)
+        return [prob/overround
+                for prob in probs]
+
 class Result(dict):
 
     def __init__(self, result):

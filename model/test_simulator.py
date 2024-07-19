@@ -34,12 +34,7 @@ def fetch_teams(leaguename,
                                                    leaguename)
     return json.loads(urllib.request.urlopen(url).read())
 
-"""
-- fixtures no longer need to include probabilities, despite what's in fixtures/{...}/simulator.json
-- probabilities are calculated from ratings and factors, so drift can be incorporated
-"""
-
-def init_request(league, ratings, state, markets, params):
+def init_sim_request(league, ratings, state, markets, params):
     def init_team(team, ratings):
         modteam=copy.deepcopy(team)
         modteam["rating"]=ratings[team["name"]]
@@ -130,11 +125,11 @@ if __name__ == "__main__":
         groupteams=markets[0].teams(teams)
         state["table"].update_status(groupteams)
         league={"drift_multiplier": driftmultipliers[leaguename]}
-        simreq=init_request(league=league,
-                            ratings=ratings,
-                            state=state,
-                            markets=markets,
-                            params=params)
+        simreq=init_sim_request(league=league,
+                                ratings=ratings,
+                                state=state,
+                                markets=markets,
+                                params=params)
         simresp=simulator.simulate_marks(**simreq)
         marks+=simresp["marks"]
     print (marks)
