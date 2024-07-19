@@ -1,13 +1,21 @@
 ### short
 
+- pass leaguename to test.py
+- ability to constrain ratings
+
 ### medium
 
-- better directory structure
-- better interfaces
-- remove sources dependency
+- results
+
+### thoughts
+
+- remove sources dependency?
+  - not sure it's worth it
 
 ### done
 
+- better directory structure
+- better interfaces
 - setup.py
 - get simulator test to work
 - abstract kernel

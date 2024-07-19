@@ -1,5 +1,3 @@
-ResultSources="fd|bbc|tf".split("|")
-
 class Event(dict):
 
     def __init__(self, event):
@@ -26,7 +24,7 @@ class Result(dict):
         dict.__init__(self, result)
 
     @property
-    def score(self, sources=ResultSources):
+    def score(self, sources="fd|bbc|tf".split("|")):
         for source in sources:
             if source in self["scores"]:
                 return self["scores"][source]
@@ -69,10 +67,6 @@ class Results(list):
         
 class Table(list):
 
-    """
-    - NB -(abs(deductions)) to ensure is always negative
-    """
-    
     @classmethod
     def initialise(self, teams, deductions):
         def points_for(team, deductions):
@@ -125,9 +119,7 @@ class State(dict):
         leaguetable.update_results(results)
         remfixtures=Results(results).remaining_fixtures(teams=teams,
                                                         rounds=rounds)
-        return State({"results": [Result(result)
-                                  for result in results],
-                      "table": leaguetable,
+        return State({"table": leaguetable,
                       "remaining_fixtures": remfixtures})
 
     def __init__(self, item={}):
