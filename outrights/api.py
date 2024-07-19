@@ -1,5 +1,5 @@
-from outrights.state import Event, State
 from outrights.markets import Market, Groups
+from outrights.state import State
 import outrights.models.simulator as simulator
 import outrights.models.solver as solver
 
@@ -57,11 +57,7 @@ def filter_training_set(teams, events, limit=6):
         raise RuntimeError("no training set")
     return trainingset
 
-"""
-leaguename not used but supplied for consistency with init_sim_request
-"""
-
-def init_solver_request(leaguename, teams, events, params=SolverParams):
+def init_solver_request(teams, events, params=SolverParams):
     trainingset=filter_training_set(teams=teams,
                                     events=events)
     return {"teamnames": [team["name"]
@@ -93,14 +89,16 @@ def init_sim_request(leaguename,
             "markets": markets}
 
 def generate(leaguename, teams, events, results, markets):
-    solver_request=init_solver_request(leaguename=leaguename,
-                                       teams=teams,
+    resp={}
+    solver_request=init_solver_request(teams=teams,
                                        events=events)
-    solver_resp=solver.solve(**solver_request)
-    resp={attr:solver_resp[attr]
-          for attr in ["ratings",
-                       "factors",
-                       "error"]}          
+    resp["training_set"]=solver_request["trainingset"]
+    solver_resp=solver.solve(**solver_request)    
+    resp.update({attr:solver_resp[attr]
+                 for attr in ["ratings",
+                              "ppg_ratings",
+                              "factors",
+                              "error"]})
     deductions={team["name"]:team["handicap"]
                 for team in teams
                 if "handicap" in team}
@@ -122,3 +120,5 @@ def generate(leaguename, teams, events, results, markets):
         resp["marks"]+=sim_resp["marks"]
     return resp
 
+if __name__=="__main__":
+    pass

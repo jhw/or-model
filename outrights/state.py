@@ -85,7 +85,7 @@ class Table(list):
     def update_result(self, result):
         hometeamname, awayteamname = result["name"].split(" vs ")
         homegoals, awaygoals = [int(goals)
-                                for goals in result.score.split("-")]
+                                for goals in Result(result).score.split("-")]
         if hometeamname in self.teamnames:
             i=self.teamnames.index(hometeamname)
             hometeam=self[i]
