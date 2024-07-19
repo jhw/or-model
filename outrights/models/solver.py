@@ -1,4 +1,6 @@
-from model.common import kernel_1x2
+from outrights.models import kernel_1x2
+
+from outrights.state import Event
 
 import math, random
 
@@ -28,7 +30,7 @@ class RatingsSolver:
     def calc_1x2_error(self, matches, ratings, factors):
         probs=[kernel_1x2(match, ratings, factors, math.exp)
                for match in matches]
-        errors=[self.rms_error(prob, match.probabilities)
+        errors=[self.rms_error(prob, Event(match).probabilities)
                 for prob, match in zip(probs,
                                        matches)]
         return sum(errors)/len(matches)
@@ -133,7 +135,7 @@ def filter_training_set(trainingset, fixtures, teamname):
         matchteamnames=event["name"].split(" vs ")
         if teamname not in matchteamnames:
             continue
-        marketprobs=event.probabilities
+        marketprobs=Event(event).probabilities
         if abs(sum(marketprobs)-1) > 1e-5:
             raise RuntimeError("Market probs do not sum to 1")
         fixture=fixtures[event["name"]]

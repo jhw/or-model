@@ -1,4 +1,3 @@
-
 """
 - NB note that this function is also required by marks model and it's imperative that that it uses the same code
 """

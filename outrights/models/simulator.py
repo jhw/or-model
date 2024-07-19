@@ -1,6 +1,6 @@
-from model.markets import Market
+from outrights.markets import Market
 
-from model.common import kernel_1x2
+from outrights.models import kernel_1x2
 
 import numpy.random as npr
 import numpy as np

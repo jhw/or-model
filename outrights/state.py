@@ -66,19 +66,6 @@ class Results(list):
         for result in self:
             count.decrement(result)
         return count.expand()
-
-class Team(dict):
-
-    def __init__(self, item={}):
-        dict.__init__(self, item)
-
-    def update(self, forgoals, againstgoals):
-        if forgoals > againstgoals:
-            self["points"]+=3
-        elif forgoals==againstgoals:
-            self["points"]+=1
-        self["goal_difference"]+=forgoals-againstgoals
-        self["played"]+=1
         
 class Table(list):
 
@@ -97,8 +84,7 @@ class Table(list):
                       for team in teams])
 
     def __init__(self, items=[]):
-        list.__init__(self, [Team(item)
-                             for item in items])
+        list.__init__(self, items)
         self.teamnames=[item["name"]
                         for item in items]
         
@@ -125,10 +111,6 @@ class Table(list):
         for team in self:
             team["live"]=team["name"] in teamnames
 
-"""
-- results are really only included in state for the sake of completeness
-"""
-            
 class State(dict):
 
     @classmethod
@@ -141,25 +123,15 @@ class State(dict):
         leaguetable=Table.initialise(teams=teams,
                                      deductions=deductions)
         leaguetable.update_results(results)
-        remfixtures=results.remaining_fixtures(teams=teams,
-                                               rounds=rounds)
-        return State({"results": results,
+        remfixtures=Results(results).remaining_fixtures(teams=teams,
+                                                        rounds=rounds)
+        return State({"results": [Result(result)
+                                  for result in results],
                       "table": leaguetable,
                       "remaining_fixtures": remfixtures})
 
     def __init__(self, item={}):
         dict.__init__(self, item)
 
-    """
-    - ideally shouldn't need this but things will go catastrophically wrong if you get the the wrong number of simulated games in total
-    """
-        
-    def validate(self, leaguename, teams):
-        rounds=State.rounds_for(leaguename)
-        target=rounds*len(teams)*(len(teams)-1)
-        ngames=len(self["results"])+len(self["remaining_fixtures"])
-        if target!=ngames:
-            raise RuntimeError("%s incorrect number of games" % leaguename)
-        
 if __name__=="__main__":
     pass
