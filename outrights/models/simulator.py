@@ -88,7 +88,6 @@ def calc_marks(markets, teams, pp):
     return marks
 
 def simulate_marks(params, markets, teams, fixtures, factors, overrides={}):
-    npr.seed((params["seed"], params["seed"]))
     simpoints, ratings = simulate_points(teams,
                                          sorted(fixtures,
                                                 key=lambda x: x["name"]),

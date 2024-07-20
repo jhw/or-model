@@ -13,6 +13,8 @@
 
 ### done
 
+- remove seed
+- allow drift multiplier to be part of output
 - check result.xxx references
 - leagues
 - pass leaguename to test.py

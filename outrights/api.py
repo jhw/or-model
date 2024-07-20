@@ -3,15 +3,13 @@ from outrights.state import State
 import outrights.models.simulator as simulator
 import outrights.models.solver as solver
 
-SolverParams={"seed": 22682,
-              "generations": 250,
+SolverParams={"generations": 250,
               "decay": 2,
               "factors": {"home_away_bias": 1.3,
                           "draw_max": 0.3,
                           "draw_curvature": -0.75}}
 
-SimParams={"seed": 22682,
-           "paths": 10000}
+SimParams={"paths": 10000}
 
 DriftMultipliers={
     "ENG1": 0.005,
@@ -78,7 +76,6 @@ def init_sim_request(leaguename,
         modteam["goal_diff"]=modteam.pop("goal_difference")
         modteam["live"]=team["live"]
         return modteam
-    factors=dict(factors) # NB
     factors["drift_multiplier"]=multipliers[leaguename]
     return {"params": params,
             "factors": factors,

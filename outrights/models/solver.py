@@ -162,7 +162,6 @@ def filter_training_set(trainingset, fixtures, teamname):
     return items
 
 def solve(params, teamnames, trainingset):
-    random.seed(params["seed"])
     ratings, factors, error = RatingsSolver().solve(teamnames,
                                                     trainingset,
                                                     params["generations"],
