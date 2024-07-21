@@ -1,5 +1,7 @@
 ### short
 
+- replace solver with scipy optimise [notes]
+
 ### medium
 
 - results fetch
