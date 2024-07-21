@@ -4,7 +4,10 @@ from outrights.api import generate
 
 import re, sys
 
-Markets=[{"league": "ENG2",
+Markets=[{"league": "ENG1",
+          "name": "Winner",
+          "payoff": "1|19x0"},
+         {"league": "ENG2",
           "name": "Winner",
           "payoff": "1|23x0"},
          {"league": "ENG3",
