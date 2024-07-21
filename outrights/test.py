@@ -2,7 +2,7 @@ from outrights.helpers import fetch_leagues, fetch_teams, fetch_events, fetch_re
 
 from outrights.api import generate
 
-import re, sys
+import os, re, sys
 
 Markets=[{"league": "ENG1",
           "name": "Winner",
@@ -19,6 +19,8 @@ Markets=[{"league": "ENG1",
 
 if __name__ == "__main__":
     try:
+        if not os.path.exists("tmp"):
+            os.mkdir("tmp")
         if len(sys.argv) < 2:
             raise RuntimeError("please enter league")
         leaguename=sys.argv[1]
@@ -39,7 +41,8 @@ if __name__ == "__main__":
                       results=results,
                       markets=markets)
         import json
-        print (json.dumps(resp,
-                          indent=2))
+        with open("tmp/%s.json" % leaguename, 'w') as f:
+            f.write(json.dumps(resp,
+                               indent=2))
     except RuntimeError as error:
         print ("Error: %s" % str(error))

@@ -1,5 +1,7 @@
 ### short
 
+- add mean, sd training set errors to teams
+- training set isn't cutting off properly at 6 teams
 - replace solver with scipy optimise [notes]
 
 ### medium
@@ -15,6 +17,7 @@
 
 ### done
 
+- refactor api output
 - remove seed
 - allow drift multiplier to be part of output
 - check result.xxx references

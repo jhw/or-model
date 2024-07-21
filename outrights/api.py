@@ -85,17 +85,44 @@ def init_sim_request(leaguename,
                          for fixture in state["remaining_fixtures"]],
             "markets": markets}
 
+def format_table(teams, results, solver_req, solver_resp):
+    table=[{"name": team["name"],
+            "normal_rating": solver_resp["ratings"][team["name"]],
+            "ppg_rating": solver_resp["ppg_ratings"][team["name"]],
+            "points": 0,
+            "played": 0,
+            "n_events": len(solver_resp["training_sets"][team["name"]])}
+           for team in teams]
+    table={team["name"]:team
+           for team in table}
+    for result in results:
+        hometeamname, awayteamname = result["name"].split(" vs ")
+        homegoals, awaygoals = [int(tok) for tok in result["score"].split("-")]
+        if homegoals > awaygoals:
+            table[hometeamname]["points"]+=3
+        elif homehoals < awaygoals:
+            table[awayteamname]["points"]+=3
+        else:
+            table[hometeamname]["points"]+=1
+            table[awayteamname]["points"]+=1
+        table[hometeamname]["played"]+=1
+        table[awayteamname]["played"]+=1        
+    return table
+
+def format_metrics(solver_resp):
+    metrics=solver_resp["factors"]
+    metrics["error"]=solver_resp["error"]
+    return metrics
+    
 def generate(leaguename, teams, events, results, markets):
-    resp={}
-    solver_request=init_solver_request(teams=teams,
+    solver_req=init_solver_request(teams=teams,
                                        events=events)
-    resp["training_set"]=solver_request["trainingset"]
-    solver_resp=solver.solve(**solver_request)    
-    resp.update({attr:solver_resp[attr]
-                 for attr in ["ratings",
-                              "ppg_ratings",
-                              "factors",
-                              "error"]})
+    solver_resp=solver.solve(**solver_req)
+    table=format_table(teams=teams,
+                       results=results,
+                       solver_req=solver_req,
+                       solver_resp=solver_resp)
+    metrics=format_metrics(solver_resp)
     deductions={team["name"]:team["handicap"]
                 for team in teams
                 if "handicap" in team}
@@ -104,7 +131,7 @@ def generate(leaguename, teams, events, results, markets):
                            deductions=deductions,
                            results=results)
     groups=Groups.initialise(markets)
-    resp["marks"]=[]
+    marks=[]
     for groupname, markets in groups.items():
         groupteams=Market(markets[0]).teams(teams)
         state["table"].update_status(groupteams)
@@ -114,8 +141,11 @@ def generate(leaguename, teams, events, results, markets):
                                  state=state,
                                  markets=markets)
         sim_resp=simulator.simulate_marks(**sim_req)
-        resp["marks"]+=sim_resp["marks"]
-    return resp
+        marks+=sim_resp["marks"]
+    return {"table": table,
+            "metrics": metrics,
+            "marks": marks}
+
 
 if __name__=="__main__":
     pass
