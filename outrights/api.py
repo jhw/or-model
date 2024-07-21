@@ -85,11 +85,11 @@ def init_sim_request(leaguename,
                          for fixture in state["remaining_fixtures"]],
             "markets": markets}
 
-def format_table(teams, results, solver_req, solver_resp):
+def format_table(teams, results, deductions, solver_req, solver_resp):
     table=[{"name": team["name"],
             "normal_rating": solver_resp["ratings"][team["name"]],
             "ppg_rating": solver_resp["ppg_ratings"][team["name"]],
-            "points": 0,
+            "points": 0 if team["name"] not in deductions else deductions[team["name"]],
             "played": 0,
             "n_events": len(solver_resp["training_sets"][team["name"]])}
            for team in teams]
@@ -107,7 +107,7 @@ def format_table(teams, results, solver_req, solver_resp):
             table[awayteamname]["points"]+=1
         table[hometeamname]["played"]+=1
         table[awayteamname]["played"]+=1        
-    return table
+    return list(table.values())
 
 def format_metrics(solver_resp):
     metrics=solver_resp["factors"]
@@ -115,17 +115,19 @@ def format_metrics(solver_resp):
     return metrics
     
 def generate(leaguename, teams, events, results, markets):
-    solver_req=init_solver_request(teams=teams,
-                                       events=events)
-    solver_resp=solver.solve(**solver_req)
-    table=format_table(teams=teams,
-                       results=results,
-                       solver_req=solver_req,
-                       solver_resp=solver_resp)
-    metrics=format_metrics(solver_resp)
     deductions={team["name"]:team["handicap"]
                 for team in teams
                 if "handicap" in team}
+
+    solver_req=init_solver_request(teams=teams,
+                                       events=events)
+    solver_resp=solver.solve(**solver_req)
+    table=format_table(teams=teams,                    
+                       results=results,
+                       deductions=deductions,
+                       solver_req=solver_req,
+                       solver_resp=solver_resp)
+    metrics=format_metrics(solver_resp)
     state=State.initialise(leaguename=leaguename,
                            teams=teams,
                            deductions=deductions,

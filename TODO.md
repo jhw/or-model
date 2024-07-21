@@ -17,6 +17,8 @@
 
 ### done
 
+- add deductions
+- return table.values()
 - refactor api output
 - remove seed
 - allow drift multiplier to be part of output
