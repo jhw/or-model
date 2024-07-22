@@ -31,7 +31,7 @@ DriftMultipliers={
 }
 
 def mean(X):
-    return sum(X)/len(X) if X != 0 else 0
+    return sum(X)/len(X) if X != [] else 0
 
 def variance(X):
     m=mean(X)
