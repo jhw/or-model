@@ -1,7 +1,5 @@
 ### short
 
-- training set isn't cutting off properly at 6 teams
-- add mean, sd training set errors to teams
 - replace solver with scipy optimise [notes]
 
 ### medium
@@ -17,6 +15,8 @@
 
 ### done
 
+- add mean, sd training set errors to teams
+- training set isn't cutting off properly at 6 teams
 - add deductions
 - return table.values()
 - refactor api output

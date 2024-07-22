@@ -30,11 +30,26 @@ DriftMultipliers={
     "SPA2": 0.01
 }
 
+def mean(X):
+    return sum(X)/len(X)
+
+def variance(X):
+    m=mean(X)
+    return sum([(x-m)**2 for x in X])
+
+def stdev(X):
+    return variance(X)**0.5
+    
 def filter_training_set(teams, events, limit=6):
     class Counter(dict):
         def __init__(self, teams):
             dict.__init__(self, {team["name"]:0
                                  for team in teams})
+        def shall_add(self, event):
+            for teamname in event["name"].split(" vs "):
+                if self[teamname] >= limit:
+                    return False
+            return True
         def add(self, event):
             for teamname in event["name"].split(" vs "):
                 self[teamname]+=1
@@ -45,14 +60,14 @@ def filter_training_set(teams, events, limit=6):
             return True
     counter, trainingset = Counter(teams), []
     for event in reversed(sorted(events,
-                                 key=lambda x: "%s/%s" % (x["date"],
-                                                          x["name"]))):
-        trainingset.append(event)
-        counter.add(event)
+                                 key=lambda x: x["date"])):
+        if counter.shall_add(event):
+            trainingset.append(event)
+            counter.add(event)
         if counter.is_complete(limit):
-            return trainingset
+            break
     if trainingset==[]:
-        raise RuntimeError("no training set")
+        raise RuntimeError("training set is empty")
     return trainingset
 
 def init_solver_request(teams, events, params=SolverParams):
@@ -91,7 +106,11 @@ def format_table(teams, results, deductions, solver_req, solver_resp):
             "ppg_rating": solver_resp["ppg_ratings"][team["name"]],
             "points": 0 if team["name"] not in deductions else deductions[team["name"]],
             "played": 0,
-            "n_events": len(solver_resp["training_sets"][team["name"]])}
+            "n_training_events": len(solver_resp["training_sets"][team["name"]]),
+            "mean_error": mean([event["error"]
+                                for event in solver_resp["training_sets"][team["name"]]]),
+            "stdev_error": mean([event["error"]
+                                 for event in solver_resp["training_sets"][team["name"]]])}
            for team in teams]
     table={team["name"]:team
            for team in table}
