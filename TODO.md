@@ -1,8 +1,8 @@
 ### short
 
-- scipy_solver draw_curvature not being properly optimised
-
-- poisson_solver disappointing results :(
+- avoid april-may period
+- poisson simulator
+- oddschecker prices
 
 ### medium
 
@@ -17,6 +17,7 @@
 
 ### done
 
+- poisson_solver disappointing results :(
 - format existing solver results vs new scipy solver
 - replace solver with scipy optimise [notes]
 - add mean, sd training set errors to teams

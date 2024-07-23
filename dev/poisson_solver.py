@@ -3,10 +3,9 @@ from scipy.special import factorial
 import json
 import math
 import random
+import sys
+import re
 import numpy as np
-
-def mean(X):
-    return np.mean(X)
 
 def poisson_prob(lmbda, k):
     return (lmbda ** k) * np.exp(-lmbda) / factorial(k)
@@ -75,33 +74,46 @@ class RatingsSolver:
         errors = [self.rms_error(prob, Event(match).probabilities) for prob, match in zip(probs, matches)]
         return np.mean(errors)
 
-    def optimize_ratings(self, matches, ratings, rho=0.1, home_advantage=1.2):
+    def optimize_ratings_and_bias(self, matches, ratings, rho=0.1):
         teamnames = list(ratings.keys())
         initial_ratings = [ratings[team] for team in teamnames]
-        bounds = [(0, 6)] * len(initial_ratings)
+        initial_params = initial_ratings + [1.2]  # Start with home_advantage of 1.2
+        bounds = [(0, 6)] * len(initial_ratings) + [(1, 1.5)]
 
-        def objective(rating_vector):
+        def objective(params):
             for i, team in enumerate(teamnames):
-                ratings[team] = rating_vector[i]
+                ratings[team] = params[i]
+            home_advantage = params[-1]
             return self.calc_poisson_error(matches, ratings, rho, home_advantage)
 
-        result = minimize(objective, initial_ratings, method='L-BFGS-B', bounds=bounds, options={'maxiter': 100})
+        result = minimize(objective, initial_params, method='L-BFGS-B', bounds=bounds, options={'maxiter': 100})
         for i, team in enumerate(teamnames):
             ratings[team] = result.x[i]
-        return ratings
+        home_advantage = result.x[-1]
+        return ratings, home_advantage
 
-    def solve(self, teamnames, matches, rho=0.1, home_advantage=1.2):
+    def solve(self, teamnames, matches, rho=0.1):
         ratings = Ratings(teamnames)
-        ratings = self.optimize_ratings(matches, ratings, rho, home_advantage)
+        ratings, home_advantage = self.optimize_ratings_and_bias(matches, ratings, rho)
         err = self.calc_poisson_error(matches, ratings, rho, home_advantage)
         return {"ratings": {k: float(v) for k, v in ratings.items()},
+                "home_advantage": home_advantage,
                 "error": err}
 
 if __name__ == "__main__":
-    struct = json.loads(open("tmp/ENG1.json").read())
-    teamnames = [team["name"] for team in struct["teams"]]
-    trainingset = struct["events"]
-    rho = 0.1  # Dixon-Coles adjustment parameter
-    home_advantage = 1.2  # Home advantage multiplier
-    resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset, rho=rho, home_advantage=home_advantage)
-    print(json.dumps(resp, sort_keys=True, indent=2))
+    try:
+        if len(sys.argv) < 2:
+            raise RuntimeError("please enter n(events)")
+        n_events = sys.argv[1]
+        if not re.search("^\\d+$", n_events):
+            raise RuntimeError("n(events) is invalid")
+        n_events = int(n_events)
+        struct = json.loads(open("tmp/ENG1.json").read())
+        teamnames = [team["name"] for team in struct["teams"]]
+        trainingset = list(reversed(sorted(struct["events"],
+                                           key = lambda e: e["date"])))[:n_events]
+        rho = 0.1  # Dixon-Coles adjustment parameter
+        resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset, rho=rho)
+        print(json.dumps(resp, sort_keys=True, indent=2))
+    except RuntimeError as error:
+        print ("Error: %s" % str(error))
