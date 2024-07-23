@@ -1,6 +1,8 @@
 ### short
 
-- poisson model
+- scipy_solver draw_curvature not being properly optimised
+
+- poisson_solver disappointing results :(
 
 ### medium
 
