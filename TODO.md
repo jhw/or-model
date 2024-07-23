@@ -1,7 +1,5 @@
 ### short
 
-- format existing solver results vs new scipy solver
-
 - poisson model
 
 ### medium
@@ -17,6 +15,7 @@
 
 ### done
 
+- format existing solver results vs new scipy solver
 - replace solver with scipy optimise [notes]
 - add mean, sd training set errors to teams
 - training set isn't cutting off properly at 6 teams

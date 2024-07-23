@@ -1,6 +1,6 @@
 from outrights.state import Event
 
-import math, random
+import json, math, random
 
 FactorMutationMultiplier=0.1
 
@@ -121,7 +121,9 @@ class RatingsSolver:
             ratings.normalise()
             err=self.mutate_factors(matches, ratings, factors,
                                     decayfac, err)
-        return (ratings, factors, err)
+        return {"ratings": dict(ratings),
+                "factors": dict(factors),
+                "error": err}
     
 if __name__=="__main__":
     import json
@@ -136,4 +138,6 @@ if __name__=="__main__":
                                generations=250,
                                decay=2,
                                factors=factors)
-    print (resp)
+    print (json.dumps(resp,
+                      sort_keys=True,
+                      indent=2))

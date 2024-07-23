@@ -1,10 +1,7 @@
-import json
-import math
-import random
 from scipy.optimize import minimize
 from outrights.state import Event
 
-FactorMutationMultiplier = 0.1
+import json, math, random
 
 def mean(X):
     return sum(X) / len(X)
@@ -101,7 +98,11 @@ class RatingsSolver:
         factors = self.optimize_factors(matches, ratings, factors)
         ratings = self.optimize_ratings(matches, ratings, factors)
         err = self.calc_1x2_error(matches, ratings, factors)
-        return ratings, factors, err
+        return {"ratings": {k:float(v)
+                            for k, v in ratings.items()},
+                "factors": {k:float(v)
+                            for k, v in factors.items()},
+                "error": err}
 
 if __name__ == "__main__":
     struct = json.loads(open("tmp/ENG1.json").read())
@@ -113,4 +114,6 @@ if __name__ == "__main__":
     resp = RatingsSolver().solve(teamnames=teamnames,
                                  matches=trainingset,
                                  factors=factors)
-    print(resp)
+    print (json.dumps(resp,
+                      sort_keys=True,
+                      indent=2))
