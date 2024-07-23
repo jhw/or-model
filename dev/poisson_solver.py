@@ -1,13 +1,15 @@
 from scipy.optimize import minimize
+from scipy.special import factorial
 import json
 import math
 import random
+import numpy as np
 
 def mean(X):
-    return sum(X) / len(X)
+    return np.mean(X)
 
 def poisson_prob(lmbda, k):
-    return (lmbda ** k) * math.exp(-lmbda) / math.factorial(k)
+    return (lmbda ** k) * np.exp(-lmbda) / factorial(k)
 
 def dixon_coles_adjustment(i, j, rho):
     if i == 0 and j == 0:
@@ -26,12 +28,18 @@ def kernel_poisson(match, ratings, rho=0.1, home_advantage=1.2):
     home_lambda = ratings[hometeamname] * home_advantage
     away_lambda = ratings[awayteamname]
 
-    score_matrix = [[poisson_prob(home_lambda, i) * poisson_prob(away_lambda, j) * dixon_coles_adjustment(i, j, rho)
-                     for j in range(11)] for i in range(11)]
+    home_goals = np.arange(11)
+    away_goals = np.arange(11)
 
-    home_win_prob = sum(score_matrix[i][j] for i in range(11) for j in range(11) if i > j)
-    draw_prob = sum(score_matrix[i][i] for i in range(11))
-    away_win_prob = sum(score_matrix[i][j] for i in range(11) for j in range(11) if i < j)
+    home_probs = poisson_prob(home_lambda, home_goals[:, np.newaxis])
+    away_probs = poisson_prob(away_lambda, away_goals[np.newaxis, :])
+    
+    dixon_coles_matrix = np.vectorize(dixon_coles_adjustment)(home_goals[:, np.newaxis], away_goals[np.newaxis, :], rho)
+    score_matrix = home_probs * away_probs * dixon_coles_matrix
+
+    home_win_prob = np.sum(np.tril(score_matrix, -1))
+    draw_prob = np.sum(np.diag(score_matrix))
+    away_win_prob = np.sum(np.triu(score_matrix, 1))
 
     return [home_win_prob, draw_prob, away_win_prob]
 
@@ -60,12 +68,12 @@ class Ratings(dict):
 
 class RatingsSolver:
     def rms_error(self, X, Y):
-        return (sum([(x - y) ** 2 for x, y in zip(X, Y)]) / len(X)) ** 0.5
+        return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
 
     def calc_poisson_error(self, matches, ratings, rho=0.1, home_advantage=1.2):
         probs = [kernel_poisson(match, ratings, rho, home_advantage) for match in matches]
         errors = [self.rms_error(prob, Event(match).probabilities) for prob, match in zip(probs, matches)]
-        return sum(errors) / len(matches)
+        return np.mean(errors)
 
     def optimize_ratings(self, matches, ratings, rho=0.1, home_advantage=1.2):
         teamnames = list(ratings.keys())
@@ -76,7 +84,7 @@ class RatingsSolver:
                 ratings[team] = rating_vector[i]
             return self.calc_poisson_error(matches, ratings, rho, home_advantage)
 
-        result = minimize(objective, initial_ratings, method='BFGS')
+        result = minimize(objective, initial_ratings, method='BFGS', options={'maxiter': 100})
         for i, team in enumerate(teamnames):
             ratings[team] = result.x[i]
         return ratings
