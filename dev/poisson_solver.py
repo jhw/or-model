@@ -78,13 +78,14 @@ class RatingsSolver:
     def optimize_ratings(self, matches, ratings, rho=0.1, home_advantage=1.2):
         teamnames = list(ratings.keys())
         initial_ratings = [ratings[team] for team in teamnames]
+        bounds = [(0, 6)] * len(initial_ratings)
 
         def objective(rating_vector):
             for i, team in enumerate(teamnames):
                 ratings[team] = rating_vector[i]
             return self.calc_poisson_error(matches, ratings, rho, home_advantage)
 
-        result = minimize(objective, initial_ratings, method='BFGS', options={'maxiter': 100})
+        result = minimize(objective, initial_ratings, method='L-BFGS-B', bounds=bounds, options={'maxiter': 100})
         for i, team in enumerate(teamnames):
             ratings[team] = result.x[i]
         return ratings
