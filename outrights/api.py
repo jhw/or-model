@@ -37,9 +37,6 @@ def variance(X):
     m=mean(X)
     return sum([(x-m)**2 for x in X])
 
-def stdev(X):
-    return variance(X)**0.5
-    
 def filter_training_set(teams, events, limit=6):
     class Counter(dict):
         def __init__(self, teams):
@@ -106,11 +103,12 @@ def format_table(teams, results, deductions, solver_req, solver_resp):
             "ppg_rating": solver_resp["ppg_ratings"][team["name"]],
             "points": 0 if team["name"] not in deductions else deductions[team["name"]],
             "played": 0,
+            "expected_points": 0,
             "n_training_events": len(solver_resp["training_sets"][team["name"]]),
             "mean_error": mean([event["error"]
                                 for event in solver_resp["training_sets"][team["name"]]]),
-            "stdev_error": mean([event["error"]
-                                 for event in solver_resp["training_sets"][team["name"]]])}
+            "var_error": variance([event["error"]
+                                   for event in solver_resp["training_sets"][team["name"]]])}
            for team in teams]
     table={team["name"]:team
            for team in table}
@@ -125,7 +123,14 @@ def format_table(teams, results, deductions, solver_req, solver_resp):
             table[hometeamname]["points"]+=1
             table[awayteamname]["points"]+=1
         table[hometeamname]["played"]+=1
-        table[awayteamname]["played"]+=1        
+        table[awayteamname]["played"]+=1
+    for team in table.values():
+        team["expected_points"]+=team["points"]
+    for fixture in solver_resp["fixtures"]:
+        hometeamname, awayteamname = fixture["name"].split(" vs ")
+        homewinprob, drawprob, awaywinprob = fixture["probabilities"]
+        table[hometeamname]["expected_points"]+=3*homewinprob+drawprob
+        table[awayteamname]["expected_points"]+=3*awaywinprob+drawprob
     return list(table.values())
 
 def format_metrics(solver_resp):

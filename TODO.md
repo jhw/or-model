@@ -16,6 +16,8 @@
 
 ### done
 
+- expected points calculation
+- fix stdev field
 - poisson_solver disappointing results :(
 - format existing solver results vs new scipy solver
 - replace solver with scipy optimise [notes]

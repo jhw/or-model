@@ -177,7 +177,7 @@ def solve(params, teamnames, trainingset):
             "factors": factors,
             "error": error,
             "ppg_ratings": ppgratings,
-            # "fixtures": fixtures, # no longer required by marks model
+            "fixtures": fixtures,
             "training_sets": trainingsets}
 
 if __name__=="__main__":
