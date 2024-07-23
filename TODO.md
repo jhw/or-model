@@ -1,10 +1,9 @@
 ### short
 
-- avoid april-may period
-- poisson simulator
-- oddschecker prices
-
 ### medium
+
+- poisson AH, OU fitting
+- poisson simulator
 
 - results fetch
 

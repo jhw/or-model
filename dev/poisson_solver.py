@@ -108,7 +108,7 @@ if __name__ == "__main__":
         if not re.search("^\\d+$", n_events):
             raise RuntimeError("n(events) is invalid")
         n_events = int(n_events)
-        struct = json.loads(open("tmp/ENG1.json").read())
+        struct = json.loads(open("dev/solver-data.json").read())
         teamnames = [team["name"] for team in struct["teams"]]
         trainingset = list(reversed(sorted(struct["events"],
                                            key = lambda e: e["date"])))[:n_events]
