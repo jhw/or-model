@@ -21,9 +21,9 @@ def dixon_coles_adjustment(i, j, rho):
     else:
         return 1
 
-def kernel_poisson(match, ratings, rho=0.1):
+def kernel_poisson(match, ratings, rho=0.1, home_advantage=1.2):
     hometeamname, awayteamname = match["name"].split(" vs ")
-    home_lambda = ratings[hometeamname]
+    home_lambda = ratings[hometeamname] * home_advantage
     away_lambda = ratings[awayteamname]
 
     score_matrix = [[poisson_prob(home_lambda, i) * poisson_prob(away_lambda, j) * dixon_coles_adjustment(i, j, rho)
@@ -62,29 +62,29 @@ class RatingsSolver:
     def rms_error(self, X, Y):
         return (sum([(x - y) ** 2 for x, y in zip(X, Y)]) / len(X)) ** 0.5
 
-    def calc_poisson_error(self, matches, ratings, rho=0.1):
-        probs = [kernel_poisson(match, ratings, rho) for match in matches]
+    def calc_poisson_error(self, matches, ratings, rho=0.1, home_advantage=1.2):
+        probs = [kernel_poisson(match, ratings, rho, home_advantage) for match in matches]
         errors = [self.rms_error(prob, Event(match).probabilities) for prob, match in zip(probs, matches)]
         return sum(errors) / len(matches)
 
-    def optimize_ratings(self, matches, ratings, rho=0.1):
+    def optimize_ratings(self, matches, ratings, rho=0.1, home_advantage=1.2):
         teamnames = list(ratings.keys())
         initial_ratings = [ratings[team] for team in teamnames]
 
         def objective(rating_vector):
             for i, team in enumerate(teamnames):
                 ratings[team] = rating_vector[i]
-            return self.calc_poisson_error(matches, ratings, rho)
+            return self.calc_poisson_error(matches, ratings, rho, home_advantage)
 
         result = minimize(objective, initial_ratings, method='BFGS')
         for i, team in enumerate(teamnames):
             ratings[team] = result.x[i]
         return ratings
 
-    def solve(self, teamnames, matches, rho=0.1):
+    def solve(self, teamnames, matches, rho=0.1, home_advantage=1.2):
         ratings = Ratings(teamnames)
-        ratings = self.optimize_ratings(matches, ratings, rho)
-        err = self.calc_poisson_error(matches, ratings, rho)
+        ratings = self.optimize_ratings(matches, ratings, rho, home_advantage)
+        err = self.calc_poisson_error(matches, ratings, rho, home_advantage)
         return {"ratings": {k: float(v) for k, v in ratings.items()},
                 "error": err}
 
@@ -93,5 +93,6 @@ if __name__ == "__main__":
     teamnames = [team["name"] for team in struct["teams"]]
     trainingset = struct["events"]
     rho = 0.1  # Dixon-Coles adjustment parameter
-    resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset, rho=rho)
+    home_advantage = 1.2  # Home advantage multiplier
+    resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset, rho=rho, home_advantage=home_advantage)
     print(json.dumps(resp, sort_keys=True, indent=2))
