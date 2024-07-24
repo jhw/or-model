@@ -1,10 +1,12 @@
 ### short
 
+- refactor solver to load events from server
+- script to parse FD for AH, OU data
+- poisson AH, OU fitting
+
 ### medium
 
-- poisson AH, OU fitting
 - poisson simulator
-
 - results fetch
 
 ### thoughts

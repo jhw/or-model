@@ -100,6 +100,13 @@ class RatingsSolver:
                 "home_advantage": home_advantage,
                 "error": err}
 
+def filter_teamnames(events):
+    teamnames = set()
+    for event in events:
+        for teamname in event["name"].split(" vs "):
+            teamnames.add(teamname)
+    return sorted(list(teamnames))
+    
 if __name__ == "__main__":
     try:
         if len(sys.argv) < 2:
@@ -108,9 +115,9 @@ if __name__ == "__main__":
         if not re.search("^\\d+$", n_events):
             raise RuntimeError("n(events) is invalid")
         n_events = int(n_events)
-        struct = json.loads(open("dev/solver-data.json").read())
-        teamnames = [team["name"] for team in struct["teams"]]
-        trainingset = list(reversed(sorted(struct["events"],
+        events = json.loads(open("dev/events.json").read())
+        teamnames = filter_teamnames(events)
+        trainingset = list(reversed(sorted(events,
                                            key = lambda e: e["date"])))[:n_events]
         rho = 0.1  # Dixon-Coles adjustment parameter
         resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset, rho=rho)
