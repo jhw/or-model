@@ -106,21 +106,43 @@ def filter_teamnames(events):
         for teamname in event["name"].split(" vs "):
             teamnames.add(teamname)
     return sorted(list(teamnames))
-    
-if __name__ == "__main__":
+
+if __name__=="__main__":
     try:
-        if len(sys.argv) < 2:
-            raise RuntimeError("please enter n(events)")
-        n_events = sys.argv[1]
+        import json, sys, urllib.request
+        if len(sys.argv) < 3:
+            raise RuntimeError("please enter league, n_events")
+        leaguename, n_events = sys.argv[1:3]
+        if not re.search("^\\D{3}\\d$", leaguename):
+            raise RuntimeError("league is invalid")
         if not re.search("^\\d+$", n_events):
-            raise RuntimeError("n(events) is invalid")
+            raise RuntimeError("n_events is invalid")
         n_events = int(n_events)
-        events = json.loads(open("dev/events.json").read())
+        print ("fetching leagues")
+        leagues={league["name"]: league
+                for league in json.loads(urllib.request.urlopen("https://teams.outrights.net/list-leagues").read())}
+        if leaguename not in leagues:
+            raise RuntimeError("league not found")
+        from fd_scraper import fetch_events
+        print ("fetching events")
+        events = [event for event in fetch_events(leagues[leaguename])
+                  if event["date"] < "2024-04-01"]
+        for event in events:
+            event["prices"] = {"fd": event["prices"]}
+        print ("%i events" % len(events))
         teamnames = filter_teamnames(events)
         trainingset = list(reversed(sorted(events,
                                            key = lambda e: e["date"])))[:n_events]
+        print ("training set %s -> %s [%i]" % (trainingset[-1]["date"],
+                                               trainingset[0]["date"],
+                                               len(trainingset)))
         rho = 0.1  # Dixon-Coles adjustment parameter
         resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset, rho=rho)
+        print ()
         print(json.dumps(resp, sort_keys=True, indent=2))
     except RuntimeError as error:
         print ("Error: %s" % str(error))
+
+
+
+

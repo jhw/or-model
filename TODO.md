@@ -1,6 +1,8 @@
 ### short
 
-- refactor solver to load events from server
+- remove fd key
+- why doesn't fd scraper seem to be returning all events?
+
 - script to parse FD for AH, OU data
 - poisson AH, OU fitting
 
