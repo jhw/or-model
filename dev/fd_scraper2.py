@@ -36,20 +36,21 @@ def parse_football_data(league):
         else:
             raise ValueError(f"Date format not recognized for date: {row['Date']}")
         
-        match_odds = {}
+        match_odds = None
         for source, keys in priority_sources.items():
             if keys[0] in row and row[keys[0]]:
-                match_odds['source'] = source
-                match_odds['prices'] = [
-                    float(row[keys[0]]),
-                    float(row[keys[1]]),
-                    float(row[keys[2]])
-                ]
+                match_odds = {
+                    'source': source,
+                    'prices': [
+                        float(row[keys[0]]),
+                        float(row[keys[1]]),
+                        float(row[keys[2]])
+                    ]
+                }
                 break
         
-        if match_odds:  # Only add event if match odds are found
-            event['match_odds'] = match_odds
-            events.append(event)
+        event['match_odds'] = match_odds
+        events.append(event)
     
     return json.dumps(events, indent=4)
 
