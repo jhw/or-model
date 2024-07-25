@@ -86,7 +86,7 @@ def fetch_events(league):
 
         event['match_odds'] = match_odds
         event['asian_handicap'] = asian_handicap
-        event['over_under_25'] = over_under_25
+        event['over_under_25_goals'] = over_under_25
         events.append(event)
 
     return events

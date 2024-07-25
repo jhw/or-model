@@ -1,7 +1,7 @@
 ### short
 
-- OU fitting
-- AH half handicap fitting
+- pass date to solver and have it calculate league table and remaining fixtures
+- poisson based simulator
 
 ### medium
 
@@ -10,6 +10,12 @@
 
 ### thoughts
 
+- why doesn't OU give a better fit?
+  - is draw fitting a proxy for OU fit?
+- better AH data?
+  from where
+- AH integer handicap fitting?
+  - how?
 - ability to constrain ratings?
   - not sure it's worth it
 - remove sources dependency?
@@ -17,6 +23,7 @@
 
 ### done
 
+- OU fitting
 - script to parse FD for AH, OU data
 - remove fd key
 - why doesn't fd scraper seem to be returning all events?

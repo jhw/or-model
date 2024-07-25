@@ -59,7 +59,21 @@ class ScoreMatrix:
     @property
     def away_win(self, home_handicap_offset = 0):
         return np.sum(np.triu(self.matrix, 1 + home_handicap_offset))
-    
+
+    @property
+    def over_goals(self, line = 2.5):
+        n = self.matrix.shape[0]
+        indices = np.arange(n)
+        mask = (indices[:, None] + indices) > line
+        return np.sum(self.matrix[mask])
+
+    @property
+    def under_goals(self, line = 2.5):
+        n = self.matrix.shape[0]
+        indices = np.arange(n)
+        mask = (indices[:, None] + indices) < line
+        return np.sum(self.matrix[mask])
+
     def normalise(fn):
         def wrapped(self):
             probabilities = fn(self)
@@ -72,6 +86,21 @@ class ScoreMatrix:
     def match_odds(self):
         return [self.home_win, self.draw, self.away_win]
 
+    @property
+    @normalise
+    def over_under_25_goals(self):
+        return [self.over_goals, self.under_goals]
+
+    @property
+    def training_inputs(self):
+        return self.match_odds
+
+    """
+    @property
+    def training_inputs(self):
+        return self.match_odds[:2]+[self.over_under_25_goals[0]]
+    """
+    
 # Event Class
 class Event(dict):
     def __init__(self, event):
@@ -86,6 +115,20 @@ class Event(dict):
     def match_odds(self):
         return self.probabilities("match_odds")
 
+    @property
+    def over_under_25_goals(self):
+        return self.probabilities("over_under_25_goals")
+
+    @property
+    def training_inputs(self):
+        return self.match_odds
+
+    """
+    @property
+    def training_inputs(self):
+        return self.match_odds[:2]+[self.over_under_25_goals[0]]
+    """
+    
 # Ratings Class
 class Ratings(dict):
     def __init__(self, teamnames):
@@ -100,8 +143,7 @@ class RatingsSolver:
 
     def calc_error(self, matches, ratings, rho=0.1, home_advantage=1.2):
         matrices = [ScoreMatrix.initialise(match, ratings, rho, home_advantage) for match in matches]        
-        errors = [self.rms_error(matrix.match_odds,
-                                 Event(match).match_odds) for matrix, match in zip(matrices, matches)]
+        errors = [self.rms_error(matrix.training_inputs, match.training_inputs) for matrix, match in zip(matrices, matches)]
         return np.mean(errors)
 
     def optimize_ratings_and_bias(self, matches, ratings, rho=0.1):
@@ -155,7 +197,8 @@ if __name__=="__main__":
             raise RuntimeError("league not found")
         from fd_scraper import fetch_events
         print ("fetching events")
-        events = [event for event in fetch_events(leagues[leaguename])
+        events = [Event(event)
+                  for event in fetch_events(leagues[leaguename])
                   if event["date"] <= "2024-04-01"]
         print ("%i events" % len(events))
         teamnames = filter_teamnames(events)
