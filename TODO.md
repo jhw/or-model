@@ -1,7 +1,7 @@
 ### short
 
-- AH, OU payoff logic
-- AH, OU fitter
+- OU fitting
+- AH half handicap fitting
 
 ### medium
 

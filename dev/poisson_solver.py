@@ -27,13 +27,20 @@ def dixon_coles_adjustment(i, j, rho):
 
 # ScoreMatrix Class
 class ScoreMatrix:
+    @classmethod
+    def initialise(self, match, ratings, rho=0.1, home_advantage=1.2):
+        hometeamname, awayteamname = match["name"].split(" vs ")
+        home_lambda = ratings[hometeamname] * home_advantage
+        away_lambda = ratings[awayteamname]
+        return ScoreMatrix(home_lambda, away_lambda, rho)
+    
     def __init__(self, home_lambda, away_lambda, rho=0.1):
         self.home_lambda = home_lambda
         self.away_lambda = away_lambda
         self.rho = rho
-        self.matrix = self.create_score_matrix()
+        self.matrix = self.init_matrix()
 
-    def create_score_matrix(self, n=11):
+    def init_matrix(self, n=11):
         home_goals = np.arange(n)
         away_goals = np.arange(n)
         home_probs = poisson_prob(self.home_lambda, home_goals[:, np.newaxis])
@@ -65,14 +72,6 @@ class ScoreMatrix:
     def match_odds(self):
         return [self.home_win, self.draw, self.away_win]
 
-# Kernel Poisson Function
-def kernel_poisson(match, ratings, rho=0.1, home_advantage=1.2):
-    hometeamname, awayteamname = match["name"].split(" vs ")
-    home_lambda = ratings[hometeamname] * home_advantage
-    away_lambda = ratings[awayteamname]
-    score_matrix = ScoreMatrix(home_lambda, away_lambda, rho)
-    return score_matrix.match_odds
-
 # Event Class
 class Event(dict):
     def __init__(self, event):
@@ -99,9 +98,10 @@ class RatingsSolver:
     def rms_error(self, X, Y):
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
 
-    def calc_poisson_error(self, matches, ratings, rho=0.1, home_advantage=1.2):
-        probs = [kernel_poisson(match, ratings, rho, home_advantage) for match in matches]
-        errors = [self.rms_error(prob, Event(match).match_odds) for prob, match in zip(probs, matches)]
+    def calc_error(self, matches, ratings, rho=0.1, home_advantage=1.2):
+        matrices = [ScoreMatrix.initialise(match, ratings, rho, home_advantage) for match in matches]        
+        errors = [self.rms_error(matrix.match_odds,
+                                 Event(match).match_odds) for matrix, match in zip(matrices, matches)]
         return np.mean(errors)
 
     def optimize_ratings_and_bias(self, matches, ratings, rho=0.1):
@@ -114,7 +114,7 @@ class RatingsSolver:
             for i, team in enumerate(teamnames):
                 ratings[team] = params[i]
             home_advantage = params[-1]
-            return self.calc_poisson_error(matches, ratings, rho, home_advantage)
+            return self.calc_error(matches, ratings, rho, home_advantage)
 
         result = minimize(objective, initial_params, method='L-BFGS-B', bounds=bounds, options={'maxiter': 100})
         for i, team in enumerate(teamnames):
@@ -125,7 +125,7 @@ class RatingsSolver:
     def solve(self, teamnames, matches, rho=0.1):
         ratings = Ratings(teamnames)
         ratings, home_advantage = self.optimize_ratings_and_bias(matches, ratings, rho)
-        err = self.calc_poisson_error(matches, ratings, rho, home_advantage)
+        err = self.calc_error(matches, ratings, rho, home_advantage)
         return {"ratings": {k: float(v) for k, v in ratings.items()},
                 "home_advantage": home_advantage,
                 "error": err}
