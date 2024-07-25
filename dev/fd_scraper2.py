@@ -15,12 +15,18 @@ def parse_football_data(league):
     reader = csv.DictReader(decoded_content)
 
     events = []
-    priority_sources = {
-        'Pinnacle': ['PSH', 'PSD', 'PSA'],
-        'bet365': ['B365H', 'B365D', 'B365A'],
-        'William Hill': ['WHH', 'WHD', 'WHA'],
-        'Ladbrokes': ['LBBH', 'LBBD', 'LBBA']  # Added mapping for Ladbrokes, assuming keys
-    }
+    priority_sources = [
+        ('Pinnacle', ['PSH', 'PSD', 'PSA']),
+        ('bet365', ['B365H', 'B365D', 'B365A']),
+        ('William Hill', ['WHH', 'WHD', 'WHA']),
+        ('Ladbrokes', ['LBH', 'LBD', 'LBA'])
+    ]
+    
+    asian_handicap_sources = [
+        ('Pinnacle', ['PAHH', 'PAHA', 'AHh']),
+        ('bet365', ['B365AHH', 'B365AHA', 'AHh']),
+        ('Ladbrokes', ['LBAHH', 'LBAHA', 'AHh'])
+    ]
 
     for row in reader:
         event = {}
@@ -37,8 +43,11 @@ def parse_football_data(league):
             raise ValueError(f"Date format not recognized for date: {row['Date']}")
         
         match_odds = None
-        for source, keys in priority_sources.items():
-            if keys[0] in row and row[keys[0]]:
+        asian_handicap = None
+
+        # Match Odds
+        for source, keys in priority_sources:
+            if all(k in row and row[k] for k in keys):
                 match_odds = {
                     'source': source,
                     'prices': [
@@ -48,11 +57,25 @@ def parse_football_data(league):
                     ]
                 }
                 break
-        
+
+        # Asian Handicap Odds
+        for source, keys in asian_handicap_sources:
+            if all(k in row and row[k] for k in keys):
+                asian_handicap = {
+                    'source': source,
+                    'line': float(row[keys[2]]),
+                    'prices': [
+                        float(row[keys[0]]),
+                        float(row[keys[1]])
+                    ]
+                }
+                break
+
         event['match_odds'] = match_odds
+        event['asian_handicap'] = asian_handicap
         events.append(event)
-    
-    return json.dumps(events, indent=4)
+
+    return events
 
 if __name__ == "__main__":
     try:
@@ -66,8 +89,7 @@ if __name__ == "__main__":
             raise RuntimeError("league not found")
         league = leagues[leaguename]
         events = parse_football_data(league)
-        for event in json.loads(events):
-            print(event)
+        print(json.dumps(events[:3], indent=2))
     except RuntimeError as error:
         print("Error: %s" % str(error))
     except ValueError as error:
