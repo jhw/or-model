@@ -1,15 +1,18 @@
+import csv
+import json
+import requests
+from datetime import datetime
 from scipy.optimize import minimize
 from scipy.special import factorial
-import json
-import math
-import random
-import sys
-import re
 import numpy as np
+import random
+import re
 
+# Poisson Probability Function
 def poisson_prob(lmbda, k):
     return (lmbda ** k) * np.exp(-lmbda) / factorial(k)
 
+# Dixon-Coles Adjustment Function
 def dixon_coles_adjustment(i, j, rho):
     if i == 0 and j == 0:
         return 1 - (i * j * rho)
@@ -22,26 +25,47 @@ def dixon_coles_adjustment(i, j, rho):
     else:
         return 1
 
+# ScoreMatrix Class
+class ScoreMatrix:
+    def __init__(self, home_lambda, away_lambda, rho=0.1):
+        self.home_lambda = home_lambda
+        self.away_lambda = away_lambda
+        self.rho = rho
+        self.matrix = self.create_score_matrix()
+
+    def create_score_matrix(self):
+        home_goals = np.arange(11)
+        away_goals = np.arange(11)
+        home_probs = poisson_prob(self.home_lambda, home_goals[:, np.newaxis])
+        away_probs = poisson_prob(self.away_lambda, away_goals[np.newaxis, :])
+        dixon_coles_matrix = np.vectorize(dixon_coles_adjustment)(home_goals[:, np.newaxis], away_goals[np.newaxis, :], self.rho)
+        return home_probs * away_probs * dixon_coles_matrix
+
+    @property
+    def home_win(self):
+        return np.sum(np.tril(self.matrix, -1))
+
+    @property
+    def draw(self):
+        return np.sum(np.diag(self.matrix))
+
+    @property
+    def away_win(self):
+        return np.sum(np.triu(self.matrix, 1))
+
+    @property
+    def match_odds(self):
+        return [self.home_win, self.draw, self.away_win]
+
+# Kernel Poisson Function
 def kernel_poisson(match, ratings, rho=0.1, home_advantage=1.2):
     hometeamname, awayteamname = match["name"].split(" vs ")
     home_lambda = ratings[hometeamname] * home_advantage
     away_lambda = ratings[awayteamname]
+    score_matrix = ScoreMatrix(home_lambda, away_lambda, rho)
+    return score_matrix.match_odds
 
-    home_goals = np.arange(11)
-    away_goals = np.arange(11)
-
-    home_probs = poisson_prob(home_lambda, home_goals[:, np.newaxis])
-    away_probs = poisson_prob(away_lambda, away_goals[np.newaxis, :])
-    
-    dixon_coles_matrix = np.vectorize(dixon_coles_adjustment)(home_goals[:, np.newaxis], away_goals[np.newaxis, :], rho)
-    score_matrix = home_probs * away_probs * dixon_coles_matrix
-
-    home_win_prob = np.sum(np.tril(score_matrix, -1))
-    draw_prob = np.sum(np.diag(score_matrix))
-    away_win_prob = np.sum(np.triu(score_matrix, 1))
-
-    return [home_win_prob, draw_prob, away_win_prob]
-
+# Event Class
 class Event(dict):
     def __init__(self, event):
         dict.__init__(self, event)
@@ -52,22 +76,24 @@ class Event(dict):
         return [prob / overround for prob in probs]
 
     @property
-    def match_odds_probabilities(self):
+    def match_odds(self):
         return self.probabilities("match_odds")
-    
+
+# Ratings Class
 class Ratings(dict):
     def __init__(self, teamnames):
         dict.__init__(self)
         for teamname in teamnames:
             self[teamname] = random.uniform(0, 6)
 
+# RatingsSolver Class
 class RatingsSolver:
     def rms_error(self, X, Y):
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
 
     def calc_poisson_error(self, matches, ratings, rho=0.1, home_advantage=1.2):
         probs = [kernel_poisson(match, ratings, rho, home_advantage) for match in matches]
-        errors = [self.rms_error(prob, Event(match).match_odds_probabilities) for prob, match in zip(probs, matches)]
+        errors = [self.rms_error(prob, Event(match).match_odds) for prob, match in zip(probs, matches)]
         return np.mean(errors)
 
     def optimize_ratings_and_bias(self, matches, ratings, rho=0.1):
@@ -136,7 +162,3 @@ if __name__=="__main__":
         print(json.dumps(resp, sort_keys=True, indent=2))
     except RuntimeError as error:
         print ("Error: %s" % str(error))
-
-
-
-
