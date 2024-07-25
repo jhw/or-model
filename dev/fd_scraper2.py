@@ -5,7 +5,7 @@ from datetime import datetime
 
 UrlPattern = "https://www.football-data.co.uk/mmz4281/2324/%s.csv"
 
-def parse_football_data(league):
+def fetch_events(league):
     url = UrlPattern % league["football-data-id"]
 
     response = requests.get(url)
@@ -15,7 +15,7 @@ def parse_football_data(league):
     reader = csv.DictReader(decoded_content)
 
     events = []
-    priority_sources = [
+    match_odds_sources = [
         ('Pinnacle', ['PSH', 'PSD', 'PSA']),
         ('bet365', ['B365H', 'B365D', 'B365A']),
         ('William Hill', ['WHH', 'WHD', 'WHA']),
@@ -28,25 +28,26 @@ def parse_football_data(league):
         ('Ladbrokes', ['LBAHH', 'LBAHA', 'AHh'])
     ]
 
+    over_under_sources = [
+        ('Pinnacle', ['P>2.5', 'P<2.5']),
+        ('bet365', ['B365>2.5', 'B365<2.5'])
+    ]
+
     for row in reader:
         event = {}
         event['name'] = f"{row['HomeTeam']} vs {row['AwayTeam']}"
         
-        date_formats = ['%d/%m/%y', '%d/%m/%Y']
-        for date_format in date_formats:
-            try:
-                event['date'] = datetime.strptime(row['Date'], date_format).strftime('%Y-%m-%d')
-                break
-            except ValueError:
-                continue
-        else:
+        try:
+            event['date'] = datetime.strptime(row['Date'], '%d/%m/%Y').strftime('%Y-%m-%d')
+        except ValueError:
             raise ValueError(f"Date format not recognized for date: {row['Date']}")
         
         match_odds = None
         asian_handicap = None
+        over_under_25 = None
 
         # Match Odds
-        for source, keys in priority_sources:
+        for source, keys in match_odds_sources:
             if all(k in row and row[k] for k in keys):
                 match_odds = {
                     'source': source,
@@ -71,8 +72,21 @@ def parse_football_data(league):
                 }
                 break
 
+        # Over/Under 2.5 Goals
+        for source, keys in over_under_sources:
+            if all(k in row and row[k] for k in keys):
+                over_under_25 = {
+                    'source': source,
+                    'prices': [
+                        float(row[keys[0]]),
+                        float(row[keys[1]])
+                    ]
+                }
+                break
+
         event['match_odds'] = match_odds
         event['asian_handicap'] = asian_handicap
+        event['over_under_25'] = over_under_25
         events.append(event)
 
     return events
@@ -88,7 +102,7 @@ if __name__ == "__main__":
         if leaguename not in leagues:
             raise RuntimeError("league not found")
         league = leagues[leaguename]
-        events = parse_football_data(league)
+        events = fetch_events(league)
         print(json.dumps(events[:3], indent=2))
     except RuntimeError as error:
         print("Error: %s" % str(error))

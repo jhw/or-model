@@ -1,6 +1,6 @@
 ### short
 
-- script to parse FD for AH, OU data
+- AH handicap logic
 - poisson AH, OU fitting
 
 ### medium
@@ -17,6 +17,7 @@
 
 ### done
 
+- script to parse FD for AH, OU data
 - remove fd key
 - why doesn't fd scraper seem to be returning all events?
 - expected points calculation

@@ -48,7 +48,7 @@ class Event(dict):
 
     @property
     def probabilities(self):
-        probs = [1 / price for price in self["prices"]]
+        probs = [1 / price for price in self["match_odds"]["prices"]]
         overround = sum(probs)
         return [prob / overround for prob in probs]
 
@@ -116,7 +116,7 @@ if __name__=="__main__":
                 for league in json.loads(urllib.request.urlopen("https://teams.outrights.net/list-leagues").read())}
         if leaguename not in leagues:
             raise RuntimeError("league not found")
-        from fd_scraper import fetch_events
+        from fd_scraper2 import fetch_events
         print ("fetching events")
         events = [event for event in fetch_events(leagues[leaguename])
                   if event["date"] <= "2024-04-01"]
