@@ -46,12 +46,15 @@ class Event(dict):
     def __init__(self, event):
         dict.__init__(self, event)
 
-    @property
-    def probabilities(self):
-        probs = [1 / price for price in self["match_odds"]["prices"]]
+    def probabilities(self, attr):
+        probs = [1 / price for price in self[attr]["prices"]]
         overround = sum(probs)
         return [prob / overround for prob in probs]
 
+    @property
+    def match_odds_probabilities(self):
+        return self.probabilities("match_odds")
+    
 class Ratings(dict):
     def __init__(self, teamnames):
         dict.__init__(self)
@@ -64,7 +67,7 @@ class RatingsSolver:
 
     def calc_poisson_error(self, matches, ratings, rho=0.1, home_advantage=1.2):
         probs = [kernel_poisson(match, ratings, rho, home_advantage) for match in matches]
-        errors = [self.rms_error(prob, Event(match).probabilities) for prob, match in zip(probs, matches)]
+        errors = [self.rms_error(prob, Event(match).match_odds_probabilities) for prob, match in zip(probs, matches)]
         return np.mean(errors)
 
     def optimize_ratings_and_bias(self, matches, ratings, rho=0.1):
@@ -116,7 +119,7 @@ if __name__=="__main__":
                 for league in json.loads(urllib.request.urlopen("https://teams.outrights.net/list-leagues").read())}
         if leaguename not in leagues:
             raise RuntimeError("league not found")
-        from fd_scraper2 import fetch_events
+        from fd_scraper import fetch_events
         print ("fetching events")
         events = [event for event in fetch_events(leagues[leaguename])
                   if event["date"] <= "2024-04-01"]
