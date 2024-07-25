@@ -1,7 +1,7 @@
 ### short
 
-- AH handicap logic
-- poisson AH, OU fitting
+- AH, OU payoff logic
+- AH, OU fitter
 
 ### medium
 

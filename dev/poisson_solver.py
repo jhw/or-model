@@ -33,27 +33,35 @@ class ScoreMatrix:
         self.rho = rho
         self.matrix = self.create_score_matrix()
 
-    def create_score_matrix(self):
-        home_goals = np.arange(11)
-        away_goals = np.arange(11)
+    def create_score_matrix(self, n=11):
+        home_goals = np.arange(n)
+        away_goals = np.arange(n)
         home_probs = poisson_prob(self.home_lambda, home_goals[:, np.newaxis])
         away_probs = poisson_prob(self.away_lambda, away_goals[np.newaxis, :])
         dixon_coles_matrix = np.vectorize(dixon_coles_adjustment)(home_goals[:, np.newaxis], away_goals[np.newaxis, :], self.rho)
         return home_probs * away_probs * dixon_coles_matrix
 
     @property
-    def home_win(self):
-        return np.sum(np.tril(self.matrix, -1))
+    def home_win(self, home_handicap_offset = 0):
+        return np.sum(np.tril(self.matrix, -1 + home_handicap_offset))
 
     @property
     def draw(self):
         return np.sum(np.diag(self.matrix))
 
     @property
-    def away_win(self):
-        return np.sum(np.triu(self.matrix, 1))
+    def away_win(self, home_handicap_offset = 0):
+        return np.sum(np.triu(self.matrix, 1 + home_handicap_offset))
+    
+    def normalise(fn):
+        def wrapped(self):
+            probabilities = fn(self)
+            overround = sum(probabilities)
+            return [prob/overround for prob in probabilities]
+        return wrapped
 
     @property
+    @normalise
     def match_odds(self):
         return [self.home_win, self.draw, self.away_win]
 
