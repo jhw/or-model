@@ -1,8 +1,5 @@
 ### short
 
-- remove fd key
-- why doesn't fd scraper seem to be returning all events?
-
 - script to parse FD for AH, OU data
 - poisson AH, OU fitting
 
@@ -20,6 +17,8 @@
 
 ### done
 
+- remove fd key
+- why doesn't fd scraper seem to be returning all events?
 - expected points calculation
 - fix stdev field
 - poisson_solver disappointing results :(

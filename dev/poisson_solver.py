@@ -47,15 +47,8 @@ class Event(dict):
         dict.__init__(self, event)
 
     @property
-    def best_prices(self, sources="fd|oc".split("|")):
-        for source in sources:
-            if source in self["prices"]:
-                return self["prices"][source]
-        return None
-
-    @property
     def probabilities(self):
-        probs = [1 / price for price in self.best_prices]
+        probs = [1 / price for price in self["prices"]]
         overround = sum(probs)
         return [prob / overround for prob in probs]
 
@@ -126,9 +119,7 @@ if __name__=="__main__":
         from fd_scraper import fetch_events
         print ("fetching events")
         events = [event for event in fetch_events(leagues[leaguename])
-                  if event["date"] < "2024-04-01"]
-        for event in events:
-            event["prices"] = {"fd": event["prices"]}
+                  if event["date"] <= "2024-04-01"]
         print ("%i events" % len(events))
         teamnames = filter_teamnames(events)
         trainingset = list(reversed(sorted(events,

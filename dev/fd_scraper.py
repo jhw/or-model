@@ -49,15 +49,9 @@ def parse_csv(text):
     return csv.reader(io.StringIO(text))
 
 def fetch_events(league,
-                 urlpattern=UrlPattern,
-                 dgf_window=["2024-04-01", "2024-07-01"], # Don't Give a Fuck
-                 cutoff="2024-01-01",
-                 **kwargs):
+                 urlpattern=UrlPattern):
     url=urlpattern % league["football-data-id"]
-    return [event for event in filter_events(parse_csv(http_get(url)))
-            if (event["date"] >= cutoff and
-                not (event["date"] >= dgf_window[0] and
-                     event["date"] < dgf_window[1]))]
+    return filter_events(parse_csv(http_get(url)))
 
 if __name__=="__main__":
     try:
