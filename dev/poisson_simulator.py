@@ -1,6 +1,6 @@
 from poisson_common import ScoreMatrix
 from poisson_solver import RatingsSolver, Event
-from poisson_helpers import fetch_leagues, filter_teamnames
+from poisson_helpers import fetch_leagues, filter_teamnames, calc_league_table
 
 import fd_scraper as fd
 
@@ -28,6 +28,7 @@ if __name__=="__main__":
                   if event["date"] <= cutoff]
         if events == []:
             raise RuntimeError("no events found")
+        """
         print ("%i events" % len(events))
         teamnames = filter_teamnames(events)
         print ("%i teams" % len(teamnames))
@@ -38,5 +39,8 @@ if __name__=="__main__":
                                                    trainingset[-1]["date"]))
         resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset)
         print (resp)
+        """
+        table = calc_league_table(events)
+        print (table)
     except RuntimeError as error:
         print ("Error: %s" % str(error))
