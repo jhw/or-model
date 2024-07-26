@@ -60,20 +60,6 @@ class ScoreMatrix:
     def away_win(self, home_handicap_offset = 0):
         return np.sum(np.triu(self.matrix, 1 + home_handicap_offset))
 
-    @property
-    def over_goals(self, line = 2.5):
-        n = self.matrix.shape[0]
-        indices = np.arange(n)
-        mask = (indices[:, None] + indices) > line
-        return np.sum(self.matrix[mask])
-
-    @property
-    def under_goals(self, line = 2.5):
-        n = self.matrix.shape[0]
-        indices = np.arange(n)
-        mask = (indices[:, None] + indices) < line
-        return np.sum(self.matrix[mask])
-
     def normalise(fn):
         def wrapped(self):
             probabilities = fn(self)
@@ -87,20 +73,9 @@ class ScoreMatrix:
         return [self.home_win, self.draw, self.away_win]
 
     @property
-    @normalise
-    def over_under_25_goals(self):
-        return [self.over_goals, self.under_goals]
-
-    @property
     def training_inputs(self):
         return self.match_odds
 
-    """
-    @property
-    def training_inputs(self):
-        return self.match_odds[:2]+[self.over_under_25_goals[0]]
-    """
-    
 # Event Class
 class Event(dict):
     def __init__(self, event):
@@ -116,19 +91,9 @@ class Event(dict):
         return self.probabilities("match_odds")
 
     @property
-    def over_under_25_goals(self):
-        return self.probabilities("over_under_25_goals")
-
-    @property
     def training_inputs(self):
         return self.match_odds
 
-    """
-    @property
-    def training_inputs(self):
-        return self.match_odds[:2]+[self.over_under_25_goals[0]]
-    """
-    
 # Ratings Class
 class Ratings(dict):
     def __init__(self, teamnames):
@@ -182,11 +147,13 @@ def filter_teamnames(events):
 if __name__=="__main__":
     try:
         import json, sys, urllib.request
-        if len(sys.argv) < 3:
-            raise RuntimeError("please enter league, n_events")
-        leaguename, n_events = sys.argv[1:3]
+        if len(sys.argv) < 4:
+            raise RuntimeError("please enter league, cutoff, n_events")
+        leaguename, cutoff, n_events = sys.argv[1:4]
         if not re.search("^\\D{3}\\d$", leaguename):
             raise RuntimeError("league is invalid")
+        if not re.search("^\\d{4}\\-\\d{2}\\-\\d{2}$", cutoff):
+            raise RuntimeError("cutoff is invalid")
         if not re.search("^\\d+$", n_events):
             raise RuntimeError("n_events is invalid")
         n_events = int(n_events)
@@ -199,7 +166,9 @@ if __name__=="__main__":
         print ("fetching events")
         events = [Event(event)
                   for event in fetch_events(leagues[leaguename])
-                  if event["date"] <= "2024-04-01"]
+                  if event["date"] <= cutoff]
+        if events == []:
+            raise RuntimeError("no events found")
         print ("%i events" % len(events))
         teamnames = filter_teamnames(events)
         trainingset = list(reversed(sorted(events,
