@@ -28,10 +28,10 @@ if __name__=="__main__":
                   if event["date"] <= cutoff]
         if events == []:
             raise RuntimeError("no events found")
-        """
         print ("%i events" % len(events))
         teamnames = filter_teamnames(events)
         print ("%i teams" % len(teamnames))
+        """
         trainingset = sorted(events,
                              key = lambda e: e["date"])[-n_events:]
         print ("%s training set events [%s -> %s]" % (len(trainingset),
@@ -40,7 +40,7 @@ if __name__=="__main__":
         resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset)
         print (resp)
         """
-        table = calc_league_table(events)
+        table = calc_league_table(teamnames, events)
         print (table)
     except RuntimeError as error:
         print ("Error: %s" % str(error))
