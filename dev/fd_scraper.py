@@ -41,6 +41,11 @@ def fetch_events(league):
             event['date'] = datetime.strptime(row['Date'], '%d/%m/%Y').strftime('%Y-%m-%d')
         except ValueError:
             raise ValueError(f"Date format not recognized for date: {row['Date']}")
+
+        try:
+            event['score'] = [int(row['FTHG']), int(row['FTAG'])]
+        except ValueError:
+            event['score'] = None
         
         match_odds = None
         asian_handicap = None

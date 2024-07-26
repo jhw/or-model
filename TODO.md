@@ -1,12 +1,6 @@
 ### short
 
-- pass date to solver and have it calculate league table and remaining fixtures
-- poisson based simulator
-
 ### medium
-
-- poisson simulator
-- results fetch
 
 ### thoughts
 
@@ -23,6 +17,8 @@
 
 ### done
 
+- results fetch
+- pass date to solver and have it calculate league table and remaining fixtures
 - OU fitting
 - script to parse FD for AH, OU data
 - remove fd key
