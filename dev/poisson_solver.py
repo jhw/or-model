@@ -2,6 +2,8 @@ from scipy.optimize import minimize
 import numpy as np
 import random
 from poisson_common import ScoreMatrix
+from poisson_helpers import fetch_leagues, filter_teamnames
+import fd_scraper as fd
 
 # Event Class
 class Event(dict):
@@ -64,16 +66,9 @@ class RatingsSolver:
                 "home_advantage": home_advantage,
                 "error": err}
 
-def filter_teamnames(events):
-    teamnames = set()
-    for event in events:
-        for teamname in event["name"].split(" vs "):
-            teamnames.add(teamname)
-    return sorted(list(teamnames))
-
 if __name__=="__main__":
     try:
-        import json, re, sys, urllib.request
+        import json, re, sys
         if len(sys.argv) < 4:
             raise RuntimeError("please enter league, cutoff, n_events")
         leaguename, cutoff, n_events = sys.argv[1:4]
@@ -86,25 +81,23 @@ if __name__=="__main__":
         n_events = int(n_events)
         print ("fetching leagues")
         leagues={league["name"]: league
-                for league in json.loads(urllib.request.urlopen("https://teams.outrights.net/list-leagues").read())}
+                 for league in fetch_leagues()}
         if leaguename not in leagues:
             raise RuntimeError("league not found")
-        from fd_scraper import fetch_events
         print ("fetching events")
         events = [Event(event)
-                  for event in fetch_events(leagues[leaguename])
+                  for event in fd.fetch_events(leagues[leaguename])
                   if event["date"] <= cutoff]
         if events == []:
             raise RuntimeError("no events found")
         print ("%i events" % len(events))
         teamnames = filter_teamnames(events)
-        trainingset = list(reversed(sorted(events,
-                                           key = lambda e: e["date"])))[:n_events]
-        print ("training set %s -> %s [%i]" % (trainingset[-1]["date"],
-                                               trainingset[0]["date"],
-                                               len(trainingset)))
-        rho = 0.1  # Dixon-Coles adjustment parameter
-        resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset, rho=rho)
+        trainingset = sorted(events,
+                             key = lambda e: e["date"])[-n_events:]
+        print ("%s training set events [%s -> %s]" % (len(trainingset),
+                                                   trainingset[0]["date"],
+                                                   trainingset[-1]["date"]))
+        resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset)
         print ()
         print(json.dumps(resp, sort_keys=True, indent=2))
     except RuntimeError as error:
