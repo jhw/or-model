@@ -1,6 +1,6 @@
 from poisson_common import ScoreMatrix
 from poisson_solver import RatingsSolver, Event
-from poisson_helpers import fetch_leagues, filter_teamnames, calc_league_table
+from poisson_helpers import fetch_leagues, filter_teamnames, calc_league_table, filter_remaining_fixtures
 
 import fd_scraper as fd
 
@@ -28,19 +28,31 @@ if __name__=="__main__":
                   if event["date"] <= cutoff]
         if events == []:
             raise RuntimeError("no events found")
-        print ("%i events" % len(events))
+        print ("%i events" % len(events))        
         teamnames = filter_teamnames(events)
         print ("%i teams" % len(teamnames))
-        """
+        results = events
+        print ("%s results" % len(results))
+        table = calc_league_table(teamnames, results)
+        print ("%i table items" % len(table))
+        remaining_fixtures = filter_remaining_fixtures(teamnames, results)
+        print ("%i remaining fixtures" % len(remaining_fixtures))
         trainingset = sorted(events,
                              key = lambda e: e["date"])[-n_events:]
         print ("%s training set events [%s -> %s]" % (len(trainingset),
                                                    trainingset[0]["date"],
                                                    trainingset[-1]["date"]))
-        resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset)
-        print (resp)
-        """
-        table = calc_league_table(teamnames, events)
-        print (table)
+        solver_resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset)
+        ratings = solver_resp["ratings"]
+        print ("ratings: %s" % ratings)
+        home_advantage = solver_resp["home_advantage"]
+        print ("home_advantage: %.5f" % home_advantage)
+        error = solver_resp["error"]
+        print ("error: %.5f" % error)
+        for fixture in remaining_fixtures:            
+            matrix = ScoreMatrix.initialise(fixture, ratings,
+                                            home_advantage = home_advantage)
+            print (matrix.matrix)
+            break
     except RuntimeError as error:
         print ("Error: %s" % str(error))

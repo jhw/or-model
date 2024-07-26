@@ -21,13 +21,13 @@ def dixon_coles_adjustment(i, j, rho):
 # ScoreMatrix Class
 class ScoreMatrix:
     @classmethod
-    def initialise(self, match, ratings, rho=0.1, home_advantage=1.2):
+    def initialise(self, match, ratings, home_advantage, rho=0.1):
         hometeamname, awayteamname = match["name"].split(" vs ")
         home_lambda = ratings[hometeamname] * home_advantage
         away_lambda = ratings[awayteamname]
         return ScoreMatrix(home_lambda, away_lambda, rho)
     
-    def __init__(self, home_lambda, away_lambda, rho=0.1):
+    def __init__(self, home_lambda, away_lambda, rho):
         self.home_lambda = home_lambda
         self.away_lambda = away_lambda
         self.rho = rho

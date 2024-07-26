@@ -41,5 +41,20 @@ def calc_league_table(teamnames, events):
 
     return league_table_list
 
+def filter_remaining_fixtures(teamnames, results, rounds=1):
+    counts={}
+    for hometeamname in teamnames:
+        for awayteamname in teamnames:
+            if hometeamname != awayteamname:    
+                counts["%s vs %s" % (hometeamname, awayteamname)] = rounds
+    for result in results:
+        counts[result["name"]]-=1
+    fixtures=[]
+    for eventname, n in counts.items():
+        for i in range(n):
+            fixture = {"name": eventname}
+            fixtures.append(fixture)
+    return fixtures
+
 if __name__=="__main__":
     pass

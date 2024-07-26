@@ -38,12 +38,12 @@ class RatingsSolver:
     def rms_error(self, X, Y):
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
 
-    def calc_error(self, matches, ratings, rho=0.1, home_advantage=1.2):
-        matrices = [ScoreMatrix.initialise(match, ratings, rho, home_advantage) for match in matches]        
+    def calc_error(self, matches, ratings, home_advantage=1.2):
+        matrices = [ScoreMatrix.initialise(match, ratings, home_advantage) for match in matches]        
         errors = [self.rms_error(matrix.training_inputs, match.training_inputs) for matrix, match in zip(matrices, matches)]
         return np.mean(errors)
 
-    def optimize_ratings_and_bias(self, matches, ratings, rho=0.1):
+    def optimize_ratings_and_bias(self, matches, ratings):
         teamnames = list(ratings.keys())
         initial_ratings = [ratings[team] for team in teamnames]
         initial_params = initial_ratings + [1.2]  # Start with home_advantage of 1.2
@@ -53,7 +53,7 @@ class RatingsSolver:
             for i, team in enumerate(teamnames):
                 ratings[team] = params[i]
             home_advantage = params[-1]
-            return self.calc_error(matches, ratings, rho, home_advantage)
+            return self.calc_error(matches, ratings, home_advantage)
 
         result = minimize(objective, initial_params, method='L-BFGS-B', bounds=bounds, options={'maxiter': 100})
         for i, team in enumerate(teamnames):
@@ -61,10 +61,10 @@ class RatingsSolver:
         home_advantage = result.x[-1]
         return ratings, home_advantage
 
-    def solve(self, teamnames, matches, rho=0.1):
+    def solve(self, teamnames, matches):
         ratings = Ratings(teamnames)
-        ratings, home_advantage = self.optimize_ratings_and_bias(matches, ratings, rho)
-        err = self.calc_error(matches, ratings, rho, home_advantage)
+        ratings, home_advantage = self.optimize_ratings_and_bias(matches, ratings)
+        err = self.calc_error(matches, ratings, home_advantage)
         return {"ratings": {k: float(v) for k, v in ratings.items()},
                 "home_advantage": float(home_advantage),
                 "error": float(err)}

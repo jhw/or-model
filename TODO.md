@@ -1,5 +1,10 @@
 ### short
 
+- simulate goals n times
+- update table points and goal difference 
+- calc positions from points 
+- generate position matrix count 
+
 ### medium
 
 ### thoughts
@@ -17,6 +22,8 @@
 
 ### done
 
+- ScoreMatrix should not have default home_advantage
+- remaining fixtures function
 - results fetch
 - pass date to solver and have it calculate league table and remaining fixtures
 - OU fitting
