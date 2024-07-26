@@ -71,7 +71,7 @@ class RatingsSolver:
 
 if __name__=="__main__":
     try:
-        import json, re, sys
+        import re, sys
         if len(sys.argv) < 4:
             raise RuntimeError("please enter league, cutoff, n_events")
         leaguename, cutoff, n_events = sys.argv[1:4]
@@ -101,8 +101,13 @@ if __name__=="__main__":
         print ("%s training set events [%s -> %s]" % (len(trainingset),
                                                    trainingset[0]["date"],
                                                    trainingset[-1]["date"]))
-        resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset)
-        print ()
-        print(json.dumps(resp, sort_keys=True, indent=2))
+
+        solver_resp = RatingsSolver().solve(teamnames=teamnames, matches=trainingset)
+        ratings = solver_resp["ratings"]
+        print ("ratings: %s" % ratings)
+        home_advantage = solver_resp["home_advantage"]
+        print ("home_advantage: %.5f" % home_advantage)
+        error = solver_resp["error"]
+        print ("error: %.5f" % error)
     except RuntimeError as error:
         print ("Error: %s" % str(error))

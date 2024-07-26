@@ -1,9 +1,11 @@
 ### short
 
-- simulate goals n times
-- update table points and goal difference 
+- simulate goals consistent with matrix
+- update table (points, goal difference)
+- add initial state
 - calc positions from points 
-- generate position matrix count 
+- generate position count matrix
+- apply payoffs
 
 ### medium
 
