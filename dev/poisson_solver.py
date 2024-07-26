@@ -1,8 +1,11 @@
-from scipy.optimize import minimize
-import numpy as np
-import random
 from poisson_common import ScoreMatrix
 from poisson_helpers import fetch_leagues, filter_teamnames
+
+from scipy.optimize import minimize
+
+import numpy as np
+import random
+
 import fd_scraper as fd
 
 # Event Class
@@ -63,8 +66,8 @@ class RatingsSolver:
         ratings, home_advantage = self.optimize_ratings_and_bias(matches, ratings, rho)
         err = self.calc_error(matches, ratings, rho, home_advantage)
         return {"ratings": {k: float(v) for k, v in ratings.items()},
-                "home_advantage": home_advantage,
-                "error": err}
+                "home_advantage": float(home_advantage),
+                "error": float(err)}
 
 if __name__=="__main__":
     try:
@@ -92,6 +95,7 @@ if __name__=="__main__":
             raise RuntimeError("no events found")
         print ("%i events" % len(events))
         teamnames = filter_teamnames(events)
+        print ("%i teams" % len(teamnames))
         trainingset = sorted(events,
                              key = lambda e: e["date"])[-n_events:]
         print ("%s training set events [%s -> %s]" % (len(trainingset),

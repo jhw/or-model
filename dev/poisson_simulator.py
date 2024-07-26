@@ -1,5 +1,7 @@
+from poisson_common import ScoreMatrix
 from poisson_solver import RatingsSolver, Event
 from poisson_helpers import fetch_leagues, filter_teamnames
+
 import fd_scraper as fd
 
 if __name__=="__main__":
@@ -28,6 +30,7 @@ if __name__=="__main__":
             raise RuntimeError("no events found")
         print ("%i events" % len(events))
         teamnames = filter_teamnames(events)
+        print ("%i teams" % len(teamnames))
         trainingset = sorted(events,
                              key = lambda e: e["date"])[-n_events:]
         print ("%s training set events [%s -> %s]" % (len(trainingset),
