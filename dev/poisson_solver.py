@@ -1,16 +1,35 @@
-from poisson_common import Event
 from poisson_kernel import ScoreMatrix
 from scipy.optimize import minimize
 import numpy as np
 import random
 
+class Event(dict):
+
+    def __init__(self, event):
+        dict.__init__(self, event)
+
+    def probabilities(self, attr):
+        probs = [1 / price for price in self[attr]["prices"]]
+        overround = sum(probs)
+        return [prob / overround for prob in probs]
+
+    @property
+    def match_odds(self):
+        return self.probabilities("match_odds")
+
+    @property
+    def training_inputs(self):
+        return self.match_odds
+
 class Ratings(dict):
+
     def __init__(self, team_names):
         dict.__init__(self)
         for team_name in team_names:
             self[team_name] = random.uniform(0, 6)
 
 class RatingsSolver:
+
     def rms_error(self, X, Y):
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
 
@@ -20,7 +39,7 @@ class RatingsSolver:
                                            home_advantage = home_advantage)
                     for match in matches]        
         errors = [self.rms_error(matrix.training_inputs,
-                                 match.training_inputs)
+                                 Event(match).training_inputs)
                   for matrix, match in zip(matrices, matches)]
         return np.mean(errors)
 

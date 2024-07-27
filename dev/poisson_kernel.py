@@ -1,11 +1,9 @@
 from scipy.special import factorial
 import numpy as np
 
-# Poisson Probability Function
 def poisson_prob(lmbda, k):
     return (lmbda ** k) * np.exp(-lmbda) / factorial(k)
 
-# Dixon-Coles Adjustment Function
 def dixon_coles_adjustment(i, j, rho):
     if i == 0 and j == 0:
         return 1 - (i * j * rho)
@@ -18,8 +16,8 @@ def dixon_coles_adjustment(i, j, rho):
     else:
         return 1
 
-# ScoreMatrix Class
 class ScoreMatrix:
+
     @classmethod
     def initialise(self, event_name, ratings, home_advantage, rho=0.1):
         home_team_name, away_team_name = event_name.split(" vs ")

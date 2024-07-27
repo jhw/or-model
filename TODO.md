@@ -1,6 +1,5 @@
 ### short
 
-- test should not need to import Event
 - season points
 
 - 0.1.0
@@ -26,6 +25,7 @@
 
 ### done
 
+- test should not need to import Event
 - split api into api and test 
 - check for match refs
 - check all arg passing uses named args

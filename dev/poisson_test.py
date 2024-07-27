@@ -1,4 +1,3 @@
-from poisson_common import Event
 from poisson_api import simulate
 import fd_scraper as fd
 import json, urllib.request
@@ -35,8 +34,7 @@ if __name__=="__main__":
         if league_name not in leagues:
             raise RuntimeError("league not found")
         print ("fetching events")
-        events = [Event(event)
-                  for event in fd.fetch_events(leagues[league_name])
+        events = [event for event in fd.fetch_events(leagues[league_name])
                   if event["date"] <= cutoff]
         if events == []:
             raise RuntimeError("no events found")
