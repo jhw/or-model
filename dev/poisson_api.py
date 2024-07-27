@@ -21,10 +21,13 @@ def simulate(team_names, training_set, results):
                             home_advantage = home_advantage,
                             n_paths = n_paths)
     position_probabilities = sim_points.position_probabilities
-    return {"solver_ratings": ratings,
+    teams = [{"name": team_name,
+              "poisson_rating": ratings[team_name],
+              "position_probabilities": position_probabilities[team_name]}
+             for team_name in team_names]
+    return {"teams": teams,
             "home_advantage": home_advantage,
-            "solver_error": solver_error,
-            "position_probabilities": position_probabilities}
+            "solver_error": solver_error}
 
 if __name__=="__main__":
     try:
