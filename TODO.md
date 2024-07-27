@@ -1,7 +1,5 @@
 ### short
 
-- season points
-
 - 0.1.0
 
 ### medium
@@ -25,6 +23,7 @@
 
 ### done
 
+- season points
 - test should not need to import Event
 - split api into api and test 
 - check for match refs

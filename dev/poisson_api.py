@@ -5,7 +5,7 @@ from poisson_simulator import SimPoints
 def calc_league_table(team_names, results):
     # Initialize league table with team names
     league_table = {team_name: {'name': team_name,
-                                'games_played': 0,
+                                'played': 0,
                                 'points': 0,
                                 'goal_difference': 0} for team_name in team_names}
 
@@ -14,8 +14,8 @@ def calc_league_table(team_names, results):
         home_score, away_score = result['score']
 
         # Update games played
-        league_table[home_team]['games_played'] += 1
-        league_table[away_team]['games_played'] += 1
+        league_table[home_team]['played'] += 1
+        league_table[away_team]['played'] += 1
 
         # Update goal difference
         goal_difference = home_score - away_score
@@ -50,7 +50,7 @@ def calc_remaining_fixtures(team_names, results, rounds):
             event_names.append(event_name)
     return event_names
 
-def calc_ppg_ratings(team_names, ratings, home_advantage):
+def calc_points_per_game_ratings(team_names, ratings, home_advantage):
     ppg_ratings = {team_name: 0 for team_name in team_names}
     for home_team_name in team_names:
         for away_team_name in team_names:
@@ -65,6 +65,20 @@ def calc_ppg_ratings(team_names, ratings, home_advantage):
     n_games = (len(team_names) - 1) * 2
     return {team_name:ppg_value / n_games
             for team_name, ppg_value in ppg_ratings.items()}
+
+def calc_expected_season_points(team_names, results, remaining_fixtures, ratings, home_advantage):
+    expected_points = {team["name"]: team["points"]
+                       for team in calc_league_table(team_names = team_names,
+                                                     results = results)}
+    for event_name in remaining_fixtures:
+        home_team_name, away_team_name = event_name.split(" vs ")
+        matrix = ScoreMatrix.initialise(event_name = event_name,
+                                        ratings = ratings,
+                                        home_advantage = home_advantage)
+        home_win_prob, draw_prob, away_win_prob = matrix.match_odds        
+        expected_points[home_team_name] += 3 * home_win_prob + draw_prob
+        expected_points[away_team_name] += 3 * away_win_prob + draw_prob
+    return expected_points                                  
 
 def simulate(team_names, training_set, results, rounds, n_paths):
     league_table = sorted(calc_league_table(team_names = team_names,
@@ -85,12 +99,22 @@ def simulate(team_names, training_set, results, rounds, n_paths):
                             home_advantage = home_advantage,
                             n_paths = n_paths)
     position_probabilities = sim_points.position_probabilities
-    ppg_ratings = calc_ppg_ratings(team_names = team_names,
-                                   ratings = poisson_ratings,
-                                   home_advantage = home_advantage)
+    season_points = calc_expected_season_points(team_names = team_names,
+                                                results = results,
+                                                remaining_fixtures = remaining_fixtures,
+                                                ratings = poisson_ratings,
+                                                home_advantage = home_advantage)
+    ppg_ratings = calc_points_per_game_ratings(team_names = team_names,
+                                               ratings = poisson_ratings,
+                                               home_advantage = home_advantage)
+    league_table_map = {team["name"]: team for team in league_table}
     teams = [{"name": team_name,
+              "points": league_table_map[team_name]["points"],
+              "goal_difference": league_table_map[team_name]["goal_difference"],
+              "played": league_table_map[team_name]["played"],
               "poisson_rating": poisson_ratings[team_name],
-              "ppg_rating": ppg_ratings[team_name],
+              "points_per_game_rating": ppg_ratings[team_name],
+              "expected_season_points": season_points[team_name],
               "position_probabilities": position_probabilities[team_name]}
              for team_name in team_names]
     return {"teams": teams,

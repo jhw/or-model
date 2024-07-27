@@ -1,7 +1,5 @@
 from poisson_kernel import ScoreMatrix
-
 import numpy as np
-
 import random
 
 class SimPoints:
