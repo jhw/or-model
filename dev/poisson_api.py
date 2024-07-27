@@ -2,7 +2,7 @@ from poisson_common import ScoreMatrix
 from poisson_solver import RatingsSolver, Event
 from poisson_simulator import SimPoints
 
-from poisson_helpers import fetch_leagues, filter_team_names, calc_league_table, calc_remaining_fixtures
+from poisson_helpers import fetch_leagues, calc_league_table, calc_remaining_fixtures
 
 import fd_scraper as fd
 
@@ -53,6 +53,17 @@ def simulate(team_names, training_set, results, rounds):
     return {"teams": teams,
             "home_advantage": home_advantage,
             "solver_error": solver_error}
+
+"""
+not fetching from or-teams as using historical data
+"""
+
+def filter_team_names(events):
+    team_names = set()
+    for event in events:
+        for team_name in event["name"].split(" vs "):
+            team_names.add(team_name)
+    return sorted(list(team_names))
 
 if __name__=="__main__":
     try:

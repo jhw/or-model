@@ -3,13 +3,6 @@ import json, urllib.request
 def fetch_leagues():
     return json.loads(urllib.request.urlopen("https://teams.outrights.net/list-leagues").read())
     
-def filter_team_names(events):
-    team_names = set()
-    for event in events:
-        for team_name in event["name"].split(" vs "):
-            team_names.add(team_name)
-    return sorted(list(team_names))
-
 def calc_league_table(team_names, results):
     # Initialize league table with team names
     league_table = {team_name: {'name': team_name,
