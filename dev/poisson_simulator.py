@@ -59,7 +59,9 @@ class SimPoints:
         for i, row in enumerate(self.positions):
             for j in row:
                 counts[i][j] += 1
-        return counts / self.n_paths
+        probabilities = counts / self.n_paths
+        return {team_name:[float(value) for value in list(row)]
+                for team_name, row in zip(self.team_names, probabilities)}
     
 if __name__=="__main__":
     try:
@@ -119,13 +121,6 @@ if __name__=="__main__":
                                             home_advantage = home_advantage)
             scores = matrix.simulate_points(n_paths)
             sim_points.update_event(fixture["name"], scores)
-        """
-        print ()
-        print (sim_points.points)
-        print ()
-        print (sim_points.positions)
-        print ()
-        """
         print (sim_points.position_probabilities)
     except RuntimeError as error:
         print ("Error: %s" % str(error))

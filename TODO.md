@@ -1,6 +1,5 @@
 ### short
 
-- simulator to return list for next team
 - [chatgpt] payoff parser 
 - [chatgpt] non standard payoffs 
 - split simulator into simulator and API
@@ -25,6 +24,7 @@
 
 ### done
 
+- simulator to return list for next team
 - simulator noise
 - position count matrix
 - test argsort
