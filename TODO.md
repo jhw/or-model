@@ -1,8 +1,13 @@
 ### short
 
-- separate into simulator and api
-- marks
-- non- standard markets
+- simulator noise
+- simulator to return list for next team
+- [chatgpt] payoff parser 
+- [chatgpt] non standard payoffs 
+- split simulator into simulator and API
+- split API into API and test 
+- ensure (eg) ratings and error outputs are prefixed by solver 
+- [chatgpt] heatmaps
 
 ### medium
 
