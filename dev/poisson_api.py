@@ -6,8 +6,8 @@ from poisson_helpers import fetch_leagues, calc_league_table, calc_remaining_fix
 
 import fd_scraper as fd
 
-def calc_points_per_game(team_names, ratings, home_advantage):
-    points_per_game = {team_name: 0 for team_name in team_names}
+def calc_ppg_ratings(team_names, ratings, home_advantage):
+    ppg_ratings = {team_name: 0 for team_name in team_names}
     for home_team_name in team_names:
         for away_team_name in team_names:
             if home_team_name != away_team_name:
@@ -16,11 +16,11 @@ def calc_points_per_game(team_names, ratings, home_advantage):
                                                 ratings = ratings,
                                                 home_advantage = home_advantage)
                 home_win_prob, draw_prob, away_win_prob = matrix.match_odds
-                points_per_game[home_team_name] += 3 * home_win_prob + draw_prob
-                points_per_game[away_team_name] += 3 * away_win_prob + draw_prob
+                ppg_ratings[home_team_name] += 3 * home_win_prob + draw_prob
+                ppg_ratings[away_team_name] += 3 * away_win_prob + draw_prob
     n_games = (len(team_names) - 1) * 2
     return {team_name:ppg_value / n_games
-            for team_name, ppg_value in points_per_game.items()}
+            for team_name, ppg_value in ppg_ratings.items()}
 
 def simulate(team_names, training_set, results, rounds):
     league_table = sorted(calc_league_table(team_names = team_names,
@@ -29,25 +29,25 @@ def simulate(team_names, training_set, results, rounds):
     remaining_fixtures = calc_remaining_fixtures(team_names = team_names,
                                                  results = results,
                                                  rounds = rounds)
-    solver_resp = RatingsSolver().solve(team_names=team_names,
-                                        matches=training_set)
-    ratings = solver_resp["ratings"]
+    solver_resp = RatingsSolver().solve(team_names = team_names,
+                                        matches = training_set)
+    poisson_ratings = solver_resp["ratings"]
     home_advantage = solver_resp["home_advantage"]
     solver_error = solver_resp["error"]
     sim_points = SimPoints(league_table, n_paths)
-    for fixture in remaining_fixtures:
-        sim_points.simulate(event_name = fixture["name"],
-                            ratings = ratings,
+    for event_name in remaining_fixtures:
+        sim_points.simulate(event_name = event_name,
+                            ratings = poisson_ratings,
                             home_advantage = home_advantage,
                             n_paths = n_paths)
     position_probabilities = sim_points.position_probabilities
-    points_per_game = calc_points_per_game(team_names = team_names,
-                                           ratings = ratings,
-                                           home_advantage = home_advantage)
+    ppg_ratings = calc_ppg_ratings(team_names = team_names,
+                                   ratings = poisson_ratings,
+                                   home_advantage = home_advantage)
     teams = [{"name": team_name,
-              "poisson_rating": ratings[team_name],
-              "position_probabilities": position_probabilities[team_name],
-              "expected_points_per_game": points_per_game[team_name]}
+              "poisson_rating": poisson_ratings[team_name],
+              "ppg_rating": ppg_ratings[team_name],
+              "position_probabilities": position_probabilities[team_name]}
              for team_name in team_names]
     return {"teams": teams,
             "home_advantage": home_advantage,

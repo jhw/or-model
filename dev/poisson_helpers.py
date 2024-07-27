@@ -45,12 +45,11 @@ def calc_remaining_fixtures(team_names, results, rounds):
                 counts["%s vs %s" % (home_team_name, away_team_name)] = rounds
     for result in results:
         counts[result["name"]]-=1
-    fixtures=[]
+    event_names = []
     for event_name, n in counts.items():
         for i in range(n):
-            fixture = {"name": event_name}
-            fixtures.append(fixture)
-    return fixtures
+            event_names.append(event_name)
+    return event_names
 
 if __name__=="__main__":
     pass

@@ -1,6 +1,5 @@
 ### short
 
-- calc_remaining fixtures can just return name
 - check for match refs
 - check all arg passing uses named args
 
@@ -27,6 +26,7 @@
 
 ### done
 
+- calc_remaining fixtures can just return name
 - send match name to solver not match
 - surface rounds argument
 - change ratings output to be a teams table
