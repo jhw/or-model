@@ -1,6 +1,5 @@
 ### short
 
-- send match name to solver not match
 - simulate expected season points
 - split api into api and test 
 
@@ -24,6 +23,7 @@
 
 ### done
 
+- send match name to solver not match
 - surface rounds argument
 - change ratings output to be a teams table
 - add SimPoints.simulate(fixtures)

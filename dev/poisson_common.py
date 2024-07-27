@@ -21,8 +21,8 @@ def dixon_coles_adjustment(i, j, rho):
 # ScoreMatrix Class
 class ScoreMatrix:
     @classmethod
-    def initialise(self, match, ratings, home_advantage, rho=0.1):
-        home_team_name, away_team_name = match["name"].split(" vs ")
+    def initialise(self, event_name, ratings, home_advantage, rho=0.1):
+        home_team_name, away_team_name = event_name.split(" vs ")
         home_lambda = ratings[home_team_name] * home_advantage
         away_lambda = ratings[away_team_name]
         return ScoreMatrix(home_lambda, away_lambda, rho)

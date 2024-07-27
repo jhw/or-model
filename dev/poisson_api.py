@@ -12,8 +12,7 @@ def calc_points_per_game(team_names, ratings, home_advantage):
         for away_team_name in team_names:
             if home_team_name != away_team_name:
                 event_name = f"{home_team_name} vs {away_team_name}"
-                match = {"name": event_name}
-                matrix = ScoreMatrix.initialise(match = match,
+                matrix = ScoreMatrix.initialise(event_name = event_name,
                                                 ratings = ratings,
                                                 home_advantage = home_advantage)
                 home_win_prob, draw_prob, away_win_prob = matrix.match_odds
@@ -37,7 +36,7 @@ def simulate(team_names, training_set, results, rounds):
     solver_error = solver_resp["error"]
     sim_points = SimPoints(league_table, n_paths)
     for fixture in remaining_fixtures:
-        sim_points.simulate(fixture = fixture,
+        sim_points.simulate(event_name = fixture["name"],
                             ratings = ratings,
                             home_advantage = home_advantage,
                             n_paths = n_paths)

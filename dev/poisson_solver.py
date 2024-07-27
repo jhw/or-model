@@ -34,9 +34,9 @@ class RatingsSolver:
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
 
     def calc_error(self, matches, ratings, home_advantage):
-        matrices = [ScoreMatrix.initialise(match,
-                                           ratings,
-                                           home_advantage)
+        matrices = [ScoreMatrix.initialise(event_name = match["name"],
+                                           ratings = ratings,
+                                           home_advantage = home_advantage)
                     for match in matches]        
         errors = [self.rms_error(matrix.training_inputs,
                                  match.training_inputs)
