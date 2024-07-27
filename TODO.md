@@ -1,5 +1,6 @@
 ### short
 
+- move fetch_leagues to api
 - check for match refs
 - check all arg passing uses named args
 
