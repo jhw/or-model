@@ -1,17 +1,18 @@
 ### short
 
-- split api into api and test 
+- test should not need to import Event
+- season points
 
-- simulate expected season points
+- 0.1.0
 
 ### medium
 
-- unit tests
-- 0.1.0
 - position heatmaps
 
 ### thoughts
 
+- unit tests?
+  - not sure it's worth it
 - why doesn't OU give a better fit?
   - is draw fitting a proxy for OU fit?
 - better AH data?
@@ -25,6 +26,7 @@
 
 ### done
 
+- split api into api and test 
 - check for match refs
 - check all arg passing uses named args
 - move event from common

@@ -1,10 +1,6 @@
 from poisson_kernel import ScoreMatrix
-from poisson_solver import RatingsSolver, Event
+from poisson_solver import RatingsSolver
 from poisson_simulator import SimPoints
-
-import fd_scraper as fd
-
-import json, urllib.request
 
 def calc_league_table(team_names, results):
     # Initialize league table with team names
@@ -70,7 +66,7 @@ def calc_ppg_ratings(team_names, ratings, home_advantage):
     return {team_name:ppg_value / n_games
             for team_name, ppg_value in ppg_ratings.items()}
 
-def simulate(team_names, training_set, results, rounds):
+def simulate(team_names, training_set, results, rounds, n_paths):
     league_table = sorted(calc_league_table(team_names = team_names,
                                             results = results),
                           key = lambda x: x["name"])                        
@@ -101,69 +97,5 @@ def simulate(team_names, training_set, results, rounds):
             "home_advantage": home_advantage,
             "solver_error": solver_error}
 
-"""
-start of test stuff
-"""
-
-def fetch_leagues():
-    return json.loads(urllib.request.urlopen("https://teams.outrights.net/list-leagues").read())
-
-"""
-not fetching from or-teams as using historical data
-"""
-
-def filter_team_names(events):
-    team_names = set()
-    for event in events:
-        for team_name in event["name"].split(" vs "):
-            team_names.add(team_name)
-    return sorted(list(team_names))
-
 if __name__=="__main__":
-    try:
-        import re, sys
-        if len(sys.argv) < 5:
-            raise RuntimeError("please enter league, cutoff, n_events, n_paths")
-        league_name, cutoff, n_events, n_paths = sys.argv[1:5]
-        if not re.search("^\\D{3}\\d$", league_name):
-            raise RuntimeError("league is invalid")
-        if not re.search("^\\d{4}\\-\\d{2}\\-\\d{2}$", cutoff):
-            raise RuntimeError("cutoff is invalid")
-        if not re.search("^\\d+$", n_events):
-            raise RuntimeError("n_events is invalid")
-        n_events = int(n_events)
-        if not re.search("^\\d+$", n_paths):
-            raise RuntimeError("n_paths is invalid")
-        n_paths = int(n_paths)
-        print ("fetching leagues")
-        leagues={league["name"]: league
-                 for league in fetch_leagues()}
-        if league_name not in leagues:
-            raise RuntimeError("league not found")
-        print ("fetching events")
-        events = [Event(event)
-                  for event in fd.fetch_events(leagues[league_name])
-                  if event["date"] <= cutoff]
-        if events == []:
-            raise RuntimeError("no events found")
-        team_names = filter_team_names(events)
-        print ("%i teams" % len(team_names))
-        results = events
-        print ("%s results" % len(results))
-        training_set = sorted(events,
-                              key = lambda e: e["date"])[-n_events:]
-        print ("%s TS events [%s -> %s]" % (len(training_set),
-                                            training_set[0]["date"],
-                                            training_set[-1]["date"]))
-        print ("simulating")
-        rounds = 2 if league_name.startswith("SCO") else 1
-        sim_resp = simulate(team_names = team_names,
-                            results = results,
-                            training_set = training_set,
-                            rounds = rounds)
-        import json
-        print ()
-        print (json.dumps(sim_resp,
-                          indent = 2))
-    except RuntimeError as error:
-        print ("Error: %s" % str(error))
+    pass
