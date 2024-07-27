@@ -6,9 +6,13 @@ import numpy as np
 
 import fd_scraper as fd
 
+import random
+
 class SimPoints:
 
     GDMultiplier = 1e-4
+
+    NoiseMultiplier = 1e-8
     
     def __init__(self, league_table, n_paths):
         self.n_paths = n_paths
@@ -18,8 +22,8 @@ class SimPoints:
     def _init_points_array(self, league_table):
         points_array = np.zeros((len(league_table), self.n_paths))
         for i, team in enumerate(league_table):
-            points_with_goal_diff = team['points'] + self.GDMultiplier * team['goal_difference']
-            points_array[i, :] = points_with_goal_diff
+            points_with_goal_diff_and_noise = team['points'] + self.GDMultiplier * team['goal_difference'] + self.NoiseMultiplier * (random.random()-0.5)
+            points_array[i, :] = points_with_goal_diff_and_noise
         return points_array
 
     def get_team_points(self, team_name):

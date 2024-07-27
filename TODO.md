@@ -1,6 +1,5 @@
 ### short
 
-- simulator noise
 - simulator to return list for next team
 - [chatgpt] payoff parser 
 - [chatgpt] non standard payoffs 
@@ -26,6 +25,7 @@
 
 ### done
 
+- simulator noise
 - position count matrix
 - test argsort
 - simulate goals consistent with matrix
