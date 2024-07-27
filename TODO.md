@@ -1,6 +1,7 @@
 ### short
 
 - surface rounds argument
+- send match name to solver not match
 - simulate expected season points
 - split api into api and test 
 
