@@ -3,16 +3,19 @@ import json, urllib.request
 def fetch_leagues():
     return json.loads(urllib.request.urlopen("https://teams.outrights.net/list-leagues").read())
     
-def filter_teamnames(events):
-    teamnames = set()
+def filter_team_names(events):
+    team_names = set()
     for event in events:
-        for teamname in event["name"].split(" vs "):
-            teamnames.add(teamname)
-    return sorted(list(teamnames))
+        for team_name in event["name"].split(" vs "):
+            team_names.add(team_name)
+    return sorted(list(team_names))
 
-def calc_league_table(teamnames, events):
+def calc_league_table(team_names, events):
     # Initialize league table with team names
-    league_table = {team: {'name': team, 'games_played': 0, 'points': 0, 'goal_difference': 0} for team in teamnames}
+    league_table = {team_name: {'name': team_name,
+                                'games_played': 0,
+                                'points': 0,
+                                'goal_difference': 0} for team_name in team_names}
 
     for event in events:
         home_team, away_team = event['name'].split(' vs ')
@@ -41,12 +44,12 @@ def calc_league_table(teamnames, events):
 
     return league_table_list
 
-def filter_remaining_fixtures(teamnames, results, rounds=1):
+def filter_remaining_fixtures(team_names, results, rounds=1):
     counts={}
-    for hometeamname in teamnames:
-        for awayteamname in teamnames:
-            if hometeamname != awayteamname:    
-                counts["%s vs %s" % (hometeamname, awayteamname)] = rounds
+    for home_team_name in team_names:
+        for away_team_name in team_names:
+            if home_team_name != away_team_name:    
+                counts["%s vs %s" % (home_team_name, away_team_name)] = rounds
     for result in results:
         counts[result["name"]]-=1
     fixtures=[]

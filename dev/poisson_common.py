@@ -22,9 +22,9 @@ def dixon_coles_adjustment(i, j, rho):
 class ScoreMatrix:
     @classmethod
     def initialise(self, match, ratings, home_advantage, rho=0.1):
-        hometeamname, awayteamname = match["name"].split(" vs ")
-        home_lambda = ratings[hometeamname] * home_advantage
-        away_lambda = ratings[awayteamname]
+        home_team_name, away_team_name = match["name"].split(" vs ")
+        home_lambda = ratings[home_team_name] * home_advantage
+        away_lambda = ratings[away_team_name]
         return ScoreMatrix(home_lambda, away_lambda, rho)
     
     def __init__(self, home_lambda, away_lambda, rho):
@@ -68,6 +68,16 @@ class ScoreMatrix:
     @property
     def training_inputs(self):
         return self.match_odds
+
+    def simulate_points(self, n_paths):
+        flat_matrix = self.matrix.flatten() 
+        chosen_indices = np.random.choice(len(flat_matrix),
+                                          size=n_paths,
+                                          p=flat_matrix / flat_matrix.sum())
+        indexes = [(i, j)
+                   for i in range(self.matrix.shape[0])
+                   for j in range(self.matrix.shape[1])]
+        return [indexes[i] for i in chosen_indices]
 
 # Event Class
 class Event(dict):

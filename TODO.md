@@ -1,11 +1,7 @@
 ### short
 
-- simulate goals consistent with matrix
-- update table (points, goal difference)
-- add initial state
-- calc positions from points 
-- generate position count matrix
-- apply payoffs
+- position count matrix
+- payoffs and marks
 
 ### medium
 
@@ -24,6 +20,10 @@
 
 ### done
 
+- test argsort
+- simulate goals consistent with matrix
+- update table (points, goal difference)
+- add initial state
 - ScoreMatrix should not have default home_advantage
 - remaining fixtures function
 - results fetch
