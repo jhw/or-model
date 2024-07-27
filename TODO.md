@@ -1,5 +1,9 @@
 ### short
 
+- calc_remaining fixtures can just return name
+- check for match refs
+- check all arg passing uses named args
+
 - simulate expected season points
 - split api into api and test 
 
