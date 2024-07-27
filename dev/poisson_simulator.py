@@ -1,4 +1,4 @@
-from poisson_common import ScoreMatrix
+from poisson_kernel import ScoreMatrix
 
 import numpy as np
 

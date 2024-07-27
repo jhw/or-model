@@ -1,4 +1,4 @@
-from poisson_common import ScoreMatrix
+from poisson_kernel import ScoreMatrix
 from poisson_solver import RatingsSolver, Event
 from poisson_simulator import SimPoints
 

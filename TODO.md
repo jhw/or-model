@@ -1,6 +1,5 @@
 ### short
 
-- move fetch_leagues to api
 - check for match refs
 - check all arg passing uses named args
 
@@ -27,6 +26,9 @@
 
 ### done
 
+- move event from common
+- rename common as kernel
+- move fetch_leagues to api
 - calc_remaining fixtures can just return name
 - send match name to solver not match
 - surface rounds argument
