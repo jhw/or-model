@@ -1,9 +1,9 @@
 ### short
 
-- [chatgpt] payoff parser 
-- [chatgpt] non standard payoffs 
 - split simulator into simulator and API
 - split API into API and test 
+
+- [chatgpt] payoff parser 
 - ensure (eg) ratings and error outputs are prefixed by solver 
 - [chatgpt] heatmaps
 
@@ -24,6 +24,7 @@
 
 ### done
 
+- [chatgpt] non standard payoffs 
 - simulator to return list for next team
 - simulator noise
 - position count matrix
