@@ -1,10 +1,12 @@
 ### short
 
-- split simulator into simulator and API
-- split API into API and test 
+- add SimPoints.simulate(fixtures)
+- change ratings output to be a teams table
+- simulate expected season points
 
-- [chatgpt] payoff parser 
-- ensure (eg) ratings and error outputs are prefixed by solver 
+- split api into api and test 
+
+- [chatgpt] payoffs
 - [chatgpt] heatmaps
 
 ### medium
@@ -24,6 +26,8 @@
 
 ### done
 
+- ensure (eg) ratings and error outputs are prefixed by solver 
+- split simulator into simulator and API
 - [chatgpt] non standard payoffs 
 - simulator to return list for next team
 - simulator noise
