@@ -101,6 +101,10 @@ def simulate(team_names, training_set, results, rounds):
             "home_advantage": home_advantage,
             "solver_error": solver_error}
 
+"""
+start of test stuff
+"""
+
 def fetch_leagues():
     return json.loads(urllib.request.urlopen("https://teams.outrights.net/list-leagues").read())
 

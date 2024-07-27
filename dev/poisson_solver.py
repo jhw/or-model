@@ -34,7 +34,9 @@ class RatingsSolver:
             for i, team in enumerate(team_names):
                 ratings[team] = params[i]
             home_advantage = params[-1]
-            return self.calc_error(matches, ratings, home_advantage)
+            return self.calc_error(matches = matches,
+                                   ratings = ratings,
+                                   home_advantage = home_advantage)
 
         result = minimize(objective,
                           initial_params,
@@ -48,8 +50,11 @@ class RatingsSolver:
 
     def solve(self, team_names, matches):
         ratings = Ratings(team_names)
-        ratings, home_advantage = self.optimize_ratings_and_bias(matches, ratings)
-        err = self.calc_error(matches, ratings, home_advantage)
+        ratings, home_advantage = self.optimize_ratings_and_bias(matches = matches,
+                                                                 ratings = ratings)
+        err = self.calc_error(matches = matches,
+                              ratings = ratings,
+                              home_advantage = home_advantage)
         return {"ratings": {k: float(v) for k, v in ratings.items()},
                 "home_advantage": float(home_advantage),
                 "error": float(err)}

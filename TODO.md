@@ -1,13 +1,12 @@
 ### short
 
-- check for match refs
-- check all arg passing uses named args
+- split api into api and test 
 
 - simulate expected season points
-- split api into api and test 
 
 ### medium
 
+- unit tests
 - 0.1.0
 - position heatmaps
 
@@ -26,6 +25,8 @@
 
 ### done
 
+- check for match refs
+- check all arg passing uses named args
 - move event from common
 - rename common as kernel
 - move fetch_leagues to api
