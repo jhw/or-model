@@ -10,16 +10,16 @@ def filter_team_names(events):
             team_names.add(team_name)
     return sorted(list(team_names))
 
-def calc_league_table(team_names, events):
+def calc_league_table(team_names, results):
     # Initialize league table with team names
     league_table = {team_name: {'name': team_name,
                                 'games_played': 0,
                                 'points': 0,
                                 'goal_difference': 0} for team_name in team_names}
 
-    for event in events:
-        home_team, away_team = event['name'].split(' vs ')
-        home_score, away_score = event['score']
+    for result in results:
+        home_team, away_team = result['name'].split(' vs ')
+        home_score, away_score = result['score']
 
         # Update games played
         league_table[home_team]['games_played'] += 1
@@ -44,7 +44,7 @@ def calc_league_table(team_names, events):
 
     return league_table_list
 
-def calc_remaining_fixtures(team_names, results, rounds=1):
+def calc_remaining_fixtures(team_names, results, rounds):
     counts={}
     for home_team_name in team_names:
         for away_team_name in team_names:
@@ -53,9 +53,9 @@ def calc_remaining_fixtures(team_names, results, rounds=1):
     for result in results:
         counts[result["name"]]-=1
     fixtures=[]
-    for eventname, n in counts.items():
+    for event_name, n in counts.items():
         for i in range(n):
-            fixture = {"name": eventname}
+            fixture = {"name": event_name}
             fixtures.append(fixture)
     return fixtures
 
