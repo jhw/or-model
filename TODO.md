@@ -1,7 +1,8 @@
 ### short
 
-- position count matrix
-- payoffs and marks
+- separate into simulator and api
+- marks
+- non- standard markets
 
 ### medium
 
@@ -10,7 +11,7 @@
 - why doesn't OU give a better fit?
   - is draw fitting a proxy for OU fit?
 - better AH data?
-  from where
+  - from where?
 - AH integer handicap fitting?
   - how?
 - ability to constrain ratings?
@@ -20,6 +21,7 @@
 
 ### done
 
+- position count matrix
 - test argsort
 - simulate goals consistent with matrix
 - update table (points, goal difference)

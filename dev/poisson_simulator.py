@@ -47,8 +47,16 @@ class SimPoints:
 
     @property
     def positions(self):
-        return len(self.points)-np.argsort(np.argsort(self.points, axis=0), axis=0)-1
-            
+        return len(self.points) - np.argsort(np.argsort(self.points, axis=0), axis=0) - 1
+
+    @property
+    def position_probabilities(self):
+        counts = np.zeros((len(self.points), len(self.points)))
+        for i, row in enumerate(self.positions):
+            for j in row:
+                counts[i][j] += 1
+        return counts / self.n_paths
+    
 if __name__=="__main__":
     try:
         import re, sys
@@ -107,9 +115,13 @@ if __name__=="__main__":
                                             home_advantage = home_advantage)
             scores = matrix.simulate_points(n_paths)
             sim_points.update_event(fixture["name"], scores)
+        """
         print ()
         print (sim_points.points)
         print ()
         print (sim_points.positions)
+        print ()
+        """
+        print (sim_points.position_probabilities)
     except RuntimeError as error:
         print ("Error: %s" % str(error))
