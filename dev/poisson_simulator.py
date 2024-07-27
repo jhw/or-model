@@ -1,3 +1,5 @@
+from poisson_common import ScoreMatrix
+
 import numpy as np
 
 import random
@@ -24,6 +26,13 @@ class SimPoints:
         team_index = self.team_names.index(team_name)
         return self.points[team_index]
 
+    def simulate(self, fixture, ratings, home_advantage, n_paths):    
+        matrix = ScoreMatrix.initialise(match = fixture,
+                                        ratings = ratings,
+                                        home_advantage = home_advantage)
+        scores = matrix.simulate_points(n_paths)
+        self.update_event(fixture["name"], scores)
+    
     def update_home_team(self, team_name, scores):
         points = np.array([3*int(score[0] > score[1]) + int(score[0] == score[1])
                            for score in scores])

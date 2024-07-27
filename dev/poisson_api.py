@@ -1,27 +1,25 @@
-from poisson_common import ScoreMatrix
 from poisson_solver import RatingsSolver, Event
 from poisson_simulator import SimPoints
 
-from poisson_helpers import fetch_leagues, filter_team_names, calc_league_table, filter_remaining_fixtures
+from poisson_helpers import fetch_leagues, filter_team_names, calc_league_table, calc_remaining_fixtures
 
 import fd_scraper as fd
 
 def simulate(team_names, training_set, results):
     league_table = sorted(calc_league_table(team_names, results),
                           key = lambda x: x["name"])                        
-    remaining_fixtures = filter_remaining_fixtures(team_names, results)
+    remaining_fixtures = calc_remaining_fixtures(team_names, results)
     solver_resp = RatingsSolver().solve(team_names=team_names,
                                         matches=training_set)
     ratings = solver_resp["ratings"]
     home_advantage = solver_resp["home_advantage"]
     solver_error = solver_resp["error"]
     sim_points = SimPoints(league_table, n_paths)
-    for fixture in remaining_fixtures:            
-        matrix = ScoreMatrix.initialise(fixture,
-                                        ratings = ratings,
-                                        home_advantage = home_advantage)
-        scores = matrix.simulate_points(n_paths)
-        sim_points.update_event(fixture["name"], scores)
+    for fixture in remaining_fixtures:
+        sim_points.simulate(fixture = fixture,
+                            ratings = ratings,
+                            home_advantage = home_advantage,
+                            n_paths = n_paths)
     position_probabilities = sim_points.position_probabilities
     return {"solver_ratings": ratings,
             "home_advantage": home_advantage,

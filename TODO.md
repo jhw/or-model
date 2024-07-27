@@ -1,10 +1,9 @@
 ### short
 
-- add SimPoints.simulate(fixtures)
+- split api into api and test 
+- surface rounds argument
 - change ratings output to be a teams table
 - simulate expected season points
-
-- split api into api and test 
 
 - [chatgpt] payoffs
 - [chatgpt] heatmaps
@@ -26,6 +25,7 @@
 
 ### done
 
+- add SimPoints.simulate(fixtures)
 - ensure (eg) ratings and error outputs are prefixed by solver 
 - split simulator into simulator and API
 - [chatgpt] non standard payoffs 

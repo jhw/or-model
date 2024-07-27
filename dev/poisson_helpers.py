@@ -44,7 +44,7 @@ def calc_league_table(team_names, events):
 
     return league_table_list
 
-def filter_remaining_fixtures(team_names, results, rounds=1):
+def calc_remaining_fixtures(team_names, results, rounds=1):
     counts={}
     for home_team_name in team_names:
         for away_team_name in team_names:
