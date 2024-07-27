@@ -1,13 +1,14 @@
 ### short
 
-- split api into api and test 
 - surface rounds argument
 - simulate expected season points
-
-- [chatgpt] payoffs
-- [chatgpt] heatmaps
+- split api into api and test 
 
 ### medium
+
+- 0.1.0
+
+- position heatmaps
 
 ### thoughts
 
