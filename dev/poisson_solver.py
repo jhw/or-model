@@ -4,14 +4,12 @@ from scipy.optimize import minimize
 import numpy as np
 import random
 
-# Ratings Class
 class Ratings(dict):
     def __init__(self, team_names):
         dict.__init__(self)
         for team_name in team_names:
             self[team_name] = random.uniform(0, 6)
 
-# RatingsSolver Class
 class RatingsSolver:
     def rms_error(self, X, Y):
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
