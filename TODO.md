@@ -2,8 +2,6 @@
 
 - mean, stdev of training_errors
 
-- position heatmaps
-
 ### tests
 
 - league table
@@ -34,6 +32,7 @@
 
 ### done
 
+- position heatmaps
 - update league table
 - training events
 - 0.1.0
