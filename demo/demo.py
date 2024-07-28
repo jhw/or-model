@@ -5,6 +5,10 @@ import json, urllib.request
 def fetch_leagues():
     return json.loads(urllib.request.urlopen("https://teams.outrights.net/list-leagues").read())
 
+"""
+not fetching from teams.outrights.net as generally using historical data here
+"""
+
 def filter_team_names(events):
     team_names = set()
     for event in events:
@@ -49,13 +53,15 @@ if __name__=="__main__":
                                             training_set[-1]["date"]))
         print ("simulating")
         rounds = 2 if league_name.startswith("SCO") else 1
-        sim_resp = simulate(team_names = team_names,
-                            results = results,
-                            training_set = training_set,
-                            rounds = rounds,
-                            n_paths = n_paths)
+        resp = simulate(team_names = team_names,
+                        results = results,
+                        training_set = training_set,
+                        rounds = rounds,
+                        n_paths = n_paths)
+        print ("home_advantage: %.5f" % resp["home_advantage"])
+        print ("solver_error: %.5f" % resp["solver_error"])
         with open("tmp/%s.json" % league_name, 'w') as f:
-            f.write(json.dumps(sim_resp,
+            f.write(json.dumps(resp,
                                indent = 2))
     except RuntimeError as error:
         print ("Error: %s" % str(error))

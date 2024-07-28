@@ -33,17 +33,17 @@ class RatingsSolver:
     def rms_error(self, X, Y):
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
 
-    def calc_error(self, matches, ratings, home_advantage):
-        matrices = [ScoreMatrix.initialise(event_name = match["name"],
+    def calc_error(self, events, ratings, home_advantage):
+        matrices = [ScoreMatrix.initialise(event_name = event["name"],
                                            ratings = ratings,
                                            home_advantage = home_advantage)
-                    for match in matches]        
+                    for event in events]        
         errors = [self.rms_error(matrix.training_inputs,
-                                 Event(match).training_inputs)
-                  for matrix, match in zip(matrices, matches)]
+                                 Event(event).training_inputs)
+                  for event, matrix in zip(events, matrices)]
         return np.mean(errors)
 
-    def optimize_ratings_and_bias(self, matches, ratings, home_advantage=1.2):
+    def optimize_ratings_and_bias(self, events, ratings, home_advantage=1.2):
         team_names = list(ratings.keys())
         initial_ratings = [ratings[team_name] for team_name in team_names]
         initial_params = initial_ratings + [home_advantage]
@@ -53,7 +53,7 @@ class RatingsSolver:
             for i, team in enumerate(team_names):
                 ratings[team] = params[i]
             home_advantage = params[-1]
-            return self.calc_error(matches = matches,
+            return self.calc_error(events = events,
                                    ratings = ratings,
                                    home_advantage = home_advantage)
 
@@ -67,11 +67,11 @@ class RatingsSolver:
         home_advantage = result.x[-1]
         return ratings, home_advantage
 
-    def solve(self, team_names, matches):
+    def solve(self, team_names, events):
         ratings = Ratings(team_names)
-        ratings, home_advantage = self.optimize_ratings_and_bias(matches = matches,
+        ratings, home_advantage = self.optimize_ratings_and_bias(events = events,
                                                                  ratings = ratings)
-        err = self.calc_error(matches = matches,
+        err = self.calc_error(events = events,
                               ratings = ratings,
                               home_advantage = home_advantage)
         return {"ratings": {k: float(v) for k, v in ratings.items()},

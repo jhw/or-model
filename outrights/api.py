@@ -50,6 +50,13 @@ def calc_remaining_fixtures(team_names, results, rounds):
             event_names.append(event_name)
     return event_names
 
+def count_training_events(team_names, events):
+    counts = {team_name:0 for team_name in team_names}
+    for event in events:
+        for team_name in event["name"].split(" vs "):
+            counts[team_name] += 1
+    return counts
+
 def calc_points_per_game_ratings(team_names, ratings, home_advantage):
     ppg_ratings = {team_name: 0 for team_name in team_names}
     for home_team_name in team_names:
@@ -81,14 +88,13 @@ def calc_expected_season_points(team_names, results, remaining_fixtures, ratings
     return expected_points                                  
 
 def simulate(team_names, training_set, results, rounds, n_paths):
-    league_table = sorted(calc_league_table(team_names = team_names,
-                                            results = results),
-                          key = lambda x: x["name"])                        
+    league_table = calc_league_table(team_names = team_names,
+                                     results = results)
     remaining_fixtures = calc_remaining_fixtures(team_names = team_names,
                                                  results = results,
                                                  rounds = rounds)
     solver_resp = RatingsSolver().solve(team_names = team_names,
-                                        matches = training_set)
+                                        events = training_set)
     poisson_ratings = solver_resp["ratings"]
     home_advantage = solver_resp["home_advantage"]
     solver_error = solver_resp["error"]
@@ -99,6 +105,9 @@ def simulate(team_names, training_set, results, rounds, n_paths):
                             home_advantage = home_advantage,
                             n_paths = n_paths)
     position_probabilities = sim_points.position_probabilities
+    league_table_map = {team["name"]: team for team in league_table}
+    training_event_counts = count_training_events(team_names = team_names,
+                                                  events = training_set)
     season_points = calc_expected_season_points(team_names = team_names,
                                                 results = results,
                                                 remaining_fixtures = remaining_fixtures,
@@ -107,11 +116,11 @@ def simulate(team_names, training_set, results, rounds, n_paths):
     ppg_ratings = calc_points_per_game_ratings(team_names = team_names,
                                                ratings = poisson_ratings,
                                                home_advantage = home_advantage)
-    league_table_map = {team["name"]: team for team in league_table}
     teams = [{"name": team_name,
               "points": league_table_map[team_name]["points"],
               "goal_difference": league_table_map[team_name]["goal_difference"],
               "played": league_table_map[team_name]["played"],
+              "training_events": training_event_counts[team_name],
               "poisson_rating": poisson_ratings[team_name],
               "points_per_game_rating": ppg_ratings[team_name],
               "expected_season_points": season_points[team_name],

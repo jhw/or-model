@@ -1,6 +1,6 @@
 ### short
 
-- training events
+- update league table
 - position heatmaps
 
 ### medium
@@ -22,6 +22,7 @@
 
 ### done
 
+- training events
 - 0.1.0
 - season points
 - test should not need to import Event
