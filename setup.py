@@ -58,7 +58,7 @@ def filter_packages(root):
     
 setuptools.setup(
     name="or-model",
-    version="0.0.10",
+    version="0.1.0",
     author="jhw",
     author_email="justin.worrall@gmail.com",
     description="An outrights model",
