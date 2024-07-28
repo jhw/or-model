@@ -1,177 +1,125 @@
-from outrights.markets import Market, Groups
-from outrights.state import State
-import outrights.models.simulator as simulator
-import outrights.models.solver as solver
+from outrights.kernel import ScoreMatrix
+from outrights.solver import RatingsSolver
+from outrights.simulator import SimPoints
 
-SolverParams={"generations": 250,
-              "decay": 2,
-              "factors": {"home_away_bias": 1.3,
-                          "draw_max": 0.3,
-                          "draw_curvature": -0.75}}
+def calc_league_table(team_names, results):
+    # Initialize league table with team names
+    league_table = {team_name: {'name': team_name,
+                                'played': 0,
+                                'points': 0,
+                                'goal_difference': 0} for team_name in team_names}
 
-SimParams={"paths": 10000}
-
-DriftMultipliers={
-    "ENG1": 0.005,
-    "ENG2": 0.01,
-    "ENG3": 0.015,
-    "ENG4": 0.02,
-    "FRA1": 0.005,
-    "FRA2": 0.01,
-    "GER1": 0.005,
-    "GER2": 0.01,
-    "ITA1": 0.005,
-    "ITA2": 0.01,
-    "NED1": 0.005,
-    "SCO2": 0.01,
-    "SCO3": 0.015,
-    "SCO4": 0.02,
-    "SPA1": 0.005,
-    "SPA2": 0.01
-}
-
-def mean(X):
-    return sum(X)/len(X) if X != [] else 0
-
-def variance(X):
-    m=mean(X)
-    return sum([(x-m)**2 for x in X])
-
-def filter_training_set(teams, events, limit=6):
-    class Counter(dict):
-        def __init__(self, teams):
-            dict.__init__(self, {team["name"]:0
-                                 for team in teams})
-        def shall_add(self, event):
-            for teamname in event["name"].split(" vs "):
-                if self[teamname] >= limit:
-                    return False
-            return True
-        def add(self, event):
-            for teamname in event["name"].split(" vs "):
-                self[teamname]+=1
-        def is_complete(self, limit):
-            for k, v in self.items():
-                if v < limit:
-                    return False
-            return True
-    counter, trainingset = Counter(teams), []
-    for event in reversed(sorted(events,
-                                 key=lambda x: x["date"])):
-        if counter.shall_add(event):
-            trainingset.append(event)
-            counter.add(event)
-        if counter.is_complete(limit):
-            break
-    if trainingset==[]:
-        raise RuntimeError("training set is empty")
-    return trainingset
-
-def init_solver_request(teams, events, params=SolverParams):
-    trainingset=filter_training_set(teams=teams,
-                                    events=events)
-    return {"teamnames": [team["name"]
-                          for team in teams],
-            "trainingset": trainingset,
-            "params": params}
-
-def init_sim_request(leaguename,
-                     ratings,
-                     factors,
-                     state,
-                     markets,
-                     params=SimParams,
-                     multipliers=DriftMultipliers):
-    def init_team(team, ratings):
-        modteam=dict(team)
-        modteam["rating"]=ratings[team["name"]]
-        modteam["goal_diff"]=modteam.pop("goal_difference")
-        modteam["live"]=team["live"]
-        return modteam
-    factors["drift_multiplier"]=multipliers[leaguename]
-    return {"params": params,
-            "factors": factors,
-            "teams": [init_team(team, ratings)
-                      for team in state["table"]],
-            "fixtures": [{"name": fixture}
-                         for fixture in state["remaining_fixtures"]],
-            "markets": markets}
-
-def format_table(teams, results, deductions, solver_req, solver_resp):
-    table=[{"name": team["name"],
-            "normal_rating": solver_resp["ratings"][team["name"]],
-            "ppg_rating": solver_resp["ppg_ratings"][team["name"]],
-            "points": 0 if team["name"] not in deductions else deductions[team["name"]],
-            "played": 0,
-            "expected_points": 0,
-            "n_training_events": len(solver_resp["training_sets"][team["name"]]),
-            "mean_error": mean([event["error"]
-                                for event in solver_resp["training_sets"][team["name"]]]),
-            "var_error": variance([event["error"]
-                                   for event in solver_resp["training_sets"][team["name"]]])}
-           for team in teams]
-    table={team["name"]:team
-           for team in table}
     for result in results:
-        hometeamname, awayteamname = result["name"].split(" vs ")
-        homegoals, awaygoals = [int(tok) for tok in result["score"].split("-")]
-        if homegoals > awaygoals:
-            table[hometeamname]["points"]+=3
-        elif homehoals < awaygoals:
-            table[awayteamname]["points"]+=3
+        home_team, away_team = result['name'].split(' vs ')
+        home_score, away_score = result['score']
+
+        # Update games played
+        league_table[home_team]['played'] += 1
+        league_table[away_team]['played'] += 1
+
+        # Update goal difference
+        goal_difference = home_score - away_score
+        league_table[home_team]['goal_difference'] += goal_difference
+        league_table[away_team]['goal_difference'] -= goal_difference
+
+        # Update points
+        if home_score > away_score:
+            league_table[home_team]['points'] += 3
+        elif away_score > home_score:
+            league_table[away_team]['points'] += 3
         else:
-            table[hometeamname]["points"]+=1
-            table[awayteamname]["points"]+=1
-        table[hometeamname]["played"]+=1
-        table[awayteamname]["played"]+=1
-    for team in table.values():
-        team["expected_points"]+=team["points"]
-    for fixture in solver_resp["fixtures"]:
-        hometeamname, awayteamname = fixture["name"].split(" vs ")
-        homewinprob, drawprob, awaywinprob = fixture["probabilities"]
-        table[hometeamname]["expected_points"]+=3*homewinprob+drawprob
-        table[awayteamname]["expected_points"]+=3*awaywinprob+drawprob
-    return list(table.values())
+            league_table[home_team]['points'] += 1
+            league_table[away_team]['points'] += 1
 
-def format_metrics(solver_resp):
-    metrics=solver_resp["factors"]
-    metrics["error"]=solver_resp["error"]
-    return metrics
-    
-def generate(leaguename, teams, events, results, markets):
-    deductions={team["name"]:team["handicap"]
-                for team in teams
-                if "handicap" in team}
+    # Convert to a list and sort by points and then by goal difference
+    league_table_list = sorted(league_table.values(), key=lambda x: (x['points'], x['goal_difference']), reverse=True)
 
-    solver_req=init_solver_request(teams=teams,
-                                       events=events)
-    solver_resp=solver.solve(**solver_req)
-    table=format_table(teams=teams,                    
-                       results=results,
-                       deductions=deductions,
-                       solver_req=solver_req,
-                       solver_resp=solver_resp)
-    metrics=format_metrics(solver_resp)
-    state=State.initialise(leaguename=leaguename,
-                           teams=teams,
-                           deductions=deductions,
-                           results=results)
-    groups=Groups.initialise(markets)
-    marks=[]
-    for groupname, markets in groups.items():
-        groupteams=Market(markets[0]).teams(teams)
-        state["table"].update_status(groupteams)
-        sim_req=init_sim_request(leaguename=leaguename,
-                                 ratings=solver_resp["ratings"],
-                                 factors=solver_resp["factors"],
-                                 state=state,
-                                 markets=markets)
-        sim_resp=simulator.simulate_marks(**sim_req)
-        marks+=sim_resp["marks"]
-    return {"table": table,
-            "metrics": metrics,
-            "marks": marks}
+    return league_table_list
 
+def calc_remaining_fixtures(team_names, results, rounds):
+    counts={}
+    for home_team_name in team_names:
+        for away_team_name in team_names:
+            if home_team_name != away_team_name:    
+                counts[f"{home_team_name} vs {away_team_name}"] = rounds
+    for result in results:
+        counts[result["name"]]-=1
+    event_names = []
+    for event_name, n in counts.items():
+        for i in range(n):
+            event_names.append(event_name)
+    return event_names
+
+def calc_points_per_game_ratings(team_names, ratings, home_advantage):
+    ppg_ratings = {team_name: 0 for team_name in team_names}
+    for home_team_name in team_names:
+        for away_team_name in team_names:
+            if home_team_name != away_team_name:
+                event_name = f"{home_team_name} vs {away_team_name}"
+                matrix = ScoreMatrix.initialise(event_name = event_name,
+                                                ratings = ratings,
+                                                home_advantage = home_advantage)
+                home_win_prob, draw_prob, away_win_prob = matrix.match_odds
+                ppg_ratings[home_team_name] += 3 * home_win_prob + draw_prob
+                ppg_ratings[away_team_name] += 3 * away_win_prob + draw_prob
+    n_games = (len(team_names) - 1) * 2
+    return {team_name:ppg_value / n_games
+            for team_name, ppg_value in ppg_ratings.items()}
+
+def calc_expected_season_points(team_names, results, remaining_fixtures, ratings, home_advantage):
+    expected_points = {team["name"]: team["points"]
+                       for team in calc_league_table(team_names = team_names,
+                                                     results = results)}
+    for event_name in remaining_fixtures:
+        home_team_name, away_team_name = event_name.split(" vs ")
+        matrix = ScoreMatrix.initialise(event_name = event_name,
+                                        ratings = ratings,
+                                        home_advantage = home_advantage)
+        home_win_prob, draw_prob, away_win_prob = matrix.match_odds        
+        expected_points[home_team_name] += 3 * home_win_prob + draw_prob
+        expected_points[away_team_name] += 3 * away_win_prob + draw_prob
+    return expected_points                                  
+
+def simulate(team_names, training_set, results, rounds, n_paths):
+    league_table = sorted(calc_league_table(team_names = team_names,
+                                            results = results),
+                          key = lambda x: x["name"])                        
+    remaining_fixtures = calc_remaining_fixtures(team_names = team_names,
+                                                 results = results,
+                                                 rounds = rounds)
+    solver_resp = RatingsSolver().solve(team_names = team_names,
+                                        matches = training_set)
+    poisson_ratings = solver_resp["ratings"]
+    home_advantage = solver_resp["home_advantage"]
+    solver_error = solver_resp["error"]
+    sim_points = SimPoints(league_table, n_paths)
+    for event_name in remaining_fixtures:
+        sim_points.simulate(event_name = event_name,
+                            ratings = poisson_ratings,
+                            home_advantage = home_advantage,
+                            n_paths = n_paths)
+    position_probabilities = sim_points.position_probabilities
+    season_points = calc_expected_season_points(team_names = team_names,
+                                                results = results,
+                                                remaining_fixtures = remaining_fixtures,
+                                                ratings = poisson_ratings,
+                                                home_advantage = home_advantage)
+    ppg_ratings = calc_points_per_game_ratings(team_names = team_names,
+                                               ratings = poisson_ratings,
+                                               home_advantage = home_advantage)
+    league_table_map = {team["name"]: team for team in league_table}
+    teams = [{"name": team_name,
+              "points": league_table_map[team_name]["points"],
+              "goal_difference": league_table_map[team_name]["goal_difference"],
+              "played": league_table_map[team_name]["played"],
+              "poisson_rating": poisson_ratings[team_name],
+              "points_per_game_rating": ppg_ratings[team_name],
+              "expected_season_points": season_points[team_name],
+              "position_probabilities": position_probabilities[team_name]}
+             for team_name in team_names]
+    return {"teams": teams,
+            "home_advantage": home_advantage,
+            "solver_error": solver_error}
 
 if __name__=="__main__":
     pass

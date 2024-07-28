@@ -1,4 +1,4 @@
-from poisson_api import simulate
+from outrights.api import simulate
 import fd_scraper as fd
 import json, urllib.request
 
@@ -54,8 +54,8 @@ if __name__=="__main__":
                             training_set = training_set,
                             rounds = rounds,
                             n_paths = n_paths)
-        print ()
-        print (json.dumps(sim_resp,
-                          indent = 2))
+        with open("tmp/%s.json" % league_name, 'w') as f:
+            f.write(json.dumps(sim_resp,
+                               indent = 2))
     except RuntimeError as error:
         print ("Error: %s" % str(error))

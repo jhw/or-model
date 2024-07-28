@@ -1,10 +1,9 @@
 ### short
 
-- 0.1.0
+- training events
+- position heatmaps
 
 ### medium
-
-- position heatmaps
 
 ### thoughts
 
@@ -23,6 +22,7 @@
 
 ### done
 
+- 0.1.0
 - season points
 - test should not need to import Event
 - split api into api and test 

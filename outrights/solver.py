@@ -1,4 +1,4 @@
-from poisson_kernel import ScoreMatrix
+from outrights.kernel import ScoreMatrix
 from scipy.optimize import minimize
 import numpy as np
 import random
