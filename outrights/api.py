@@ -105,7 +105,6 @@ def simulate(team_names, training_set, results, rounds, n_paths):
                             home_advantage = home_advantage,
                             n_paths = n_paths)
     position_probabilities = sim_points.position_probabilities
-    league_table_map = {team["name"]: team for team in league_table}
     training_event_counts = count_training_events(team_names = team_names,
                                                   events = training_set)
     season_points = calc_expected_season_points(team_names = team_names,
@@ -116,17 +115,13 @@ def simulate(team_names, training_set, results, rounds, n_paths):
     ppg_ratings = calc_points_per_game_ratings(team_names = team_names,
                                                ratings = poisson_ratings,
                                                home_advantage = home_advantage)
-    teams = [{"name": team_name,
-              "points": league_table_map[team_name]["points"],
-              "goal_difference": league_table_map[team_name]["goal_difference"],
-              "played": league_table_map[team_name]["played"],
-              "training_events": training_event_counts[team_name],
-              "poisson_rating": poisson_ratings[team_name],
-              "points_per_game_rating": ppg_ratings[team_name],
-              "expected_season_points": season_points[team_name],
-              "position_probabilities": position_probabilities[team_name]}
-             for team_name in team_names]
-    return {"teams": teams,
+    for team in league_table:
+        team.update({"training_events": training_event_counts[team["name"]],
+                     "poisson_rating": poisson_ratings[team["name"]],
+                     "points_per_game_rating": ppg_ratings[team["name"]],
+                     "expected_season_points": season_points[team["name"]],
+                     "position_probabilities": position_probabilities[team["name"]]})
+    return {"teams": league_table,
             "home_advantage": home_advantage,
             "solver_error": solver_error}
 

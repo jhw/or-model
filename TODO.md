@@ -1,7 +1,19 @@
 ### short
 
-- update league table
+- mean, stdev of training_errors
+
 - position heatmaps
+
+### tests
+
+- league table
+- remaining fixtures
+- sum of matrix values
+- matrix orientation
+- simulated scores to correct score probabilities
+- score to points mapping
+- points to position mapping
+- position to probability mapping
 
 ### medium
 
@@ -22,6 +34,7 @@
 
 ### done
 
+- update league table
 - training events
 - 0.1.0
 - season points
