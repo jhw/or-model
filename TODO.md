@@ -1,6 +1,6 @@
 ### short
 
-- mean, stdev of training_errors
+- why is std_training_error so high in many cases?
 
 ### tests
 
@@ -32,6 +32,7 @@
 
 ### done
 
+- mean, stdev of training_errors
 - position heatmaps
 - update league table
 - training events

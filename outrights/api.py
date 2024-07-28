@@ -1,5 +1,5 @@
 from outrights.kernel import ScoreMatrix
-from outrights.solver import RatingsSolver
+from outrights.solver import RatingsSolver, Event
 from outrights.simulator import SimPoints
 
 def calc_league_table(team_names, results):
@@ -50,12 +50,25 @@ def calc_remaining_fixtures(team_names, results, rounds):
             event_names.append(event_name)
     return event_names
 
-def count_training_events(team_names, events):
-    counts = {team_name:0 for team_name in team_names}
+def calc_training_errors(team_names, events, ratings, home_advantage):
+    errors = {team_name: [] for team_name in team_names}
     for event in events:
-        for team_name in event["name"].split(" vs "):
-            counts[team_name] += 1
-    return counts
+        home_team_name, away_team_name = event["name"].split(" vs ")
+        matrix = ScoreMatrix.initialise(event_name = event["name"],
+                                        ratings = ratings,
+                                        home_advantage = home_advantage)
+        model_home_win, model_draw, model_away_win = matrix.match_odds
+        model_home_team_expected_points = 3 * model_home_win + model_draw
+        model_away_team_expected_points = 3 * model_away_win + model_draw
+        market_home_win, market_draw, market_away_win = Event(event).training_inputs
+        market_home_team_expected_points = 3 * market_home_win + market_draw
+        market_away_team_expected_points = 3 * market_away_win + market_draw        
+        home_team_error = model_home_team_expected_points - market_home_team_expected_points
+        away_team_error = model_away_team_expected_points - market_away_team_expected_points
+        errors[home_team_name].append(home_team_error)
+        errors[away_team_name].append(away_team_error)
+    return errors
+
 
 def calc_points_per_game_ratings(team_names, ratings, home_advantage):
     ppg_ratings = {team_name: 0 for team_name in team_names}
@@ -87,6 +100,16 @@ def calc_expected_season_points(team_names, results, remaining_fixtures, ratings
         expected_points[away_team_name] += 3 * away_win_prob + draw_prob
     return expected_points                                  
 
+def mean(X):
+    return sum(X)/len(X) if X != [] else 0
+
+def variance(X):
+    m = mean(X)
+    return sum([(x-m)**2 for x in X])
+
+def standard_deviation(X):
+    return variance(X)**0.5
+
 def simulate(team_names, training_set, results, rounds, n_paths):
     league_table = calc_league_table(team_names = team_names,
                                      results = results)
@@ -105,8 +128,10 @@ def simulate(team_names, training_set, results, rounds, n_paths):
                             home_advantage = home_advantage,
                             n_paths = n_paths)
     position_probabilities = sim_points.position_probabilities
-    training_event_counts = count_training_events(team_names = team_names,
-                                                  events = training_set)
+    training_errors = calc_training_errors(team_names = team_names,
+                                           events = training_set,
+                                           ratings = poisson_ratings,
+                                           home_advantage = home_advantage)
     season_points = calc_expected_season_points(team_names = team_names,
                                                 results = results,
                                                 remaining_fixtures = remaining_fixtures,
@@ -116,7 +141,10 @@ def simulate(team_names, training_set, results, rounds, n_paths):
                                                ratings = poisson_ratings,
                                                home_advantage = home_advantage)
     for team in league_table:
-        team.update({"training_events": training_event_counts[team["name"]],
+        errors = training_errors[team["name"]]
+        team.update({"training_events": len(errors),
+                     "mean_training_error": mean(errors),
+                     "std_training_error": standard_deviation(errors),
                      "poisson_rating": poisson_ratings[team["name"]],
                      "points_per_game_rating": ppg_ratings[team["name"]],
                      "expected_season_points": season_points[team["name"]],
