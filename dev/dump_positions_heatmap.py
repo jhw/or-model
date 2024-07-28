@@ -31,13 +31,16 @@ if __name__ == "__main__":
         # Convert probabilities to percentages
         position_probabilities = np.array(sorted_position_probabilities) * 100
         
+        # Apply square root transformation to intensify the color
+        transformed_probabilities = np.sqrt(position_probabilities)
+        
         # Plotting the heatmap
         plt.figure(figsize=(12, 12))
-        heatmap = sns.heatmap(position_probabilities,
+        heatmap = sns.heatmap(transformed_probabilities,
                               cmap='Reds',
                               yticklabels=sorted_teams,
                               xticklabels=np.arange(1, len(teams) + 1),
-                              cbar_kws={'format': '%.0f%%'})
+                              cbar=False)  # Remove color bar
         
         # Update title and add gap between title and heatmap
         plt.title(f"{league_name} Position Probability Heatmap", fontsize=20, pad=20)
