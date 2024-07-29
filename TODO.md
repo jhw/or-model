@@ -1,12 +1,8 @@
 ### short
 
-- test remaining fixtures
 - test position matrix sums to one
-- test event normalised probs
 
 ### medium
-
-- unit tests
 
 ### thoughts
 
@@ -27,6 +23,8 @@
 
 ### done
 
+- test event normalised probs
+- test remaining fixtures
 - ScoreMatrix.initialise should have default n arg
 - convert all metrics to float
 - mean, stdev of training_errors

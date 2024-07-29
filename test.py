@@ -4,6 +4,12 @@ import unittest
 
 class ModelTest(unittest.TestCase):
 
+    def test_event(self):
+        from outrights.solver import Event
+        event = Event({"name": "A vs B",
+                       "match_odds": {"prices": [2.5, 2.5, 2.5]}})
+        self.assertAlmostEqual(sum(event.training_inputs), 1)
+    
     def test_score_matrix_dimensionality(self):
         from outrights.kernel import ScoreMatrix
         matrix = ScoreMatrix.initialise(event_name = "A vs B",
@@ -43,6 +49,19 @@ class ModelTest(unittest.TestCase):
             self.assertEqual(table[team_name]["points"], points)
             self.assertEqual(table[team_name]["goal_difference"], goal_difference)
             self.assertEqual(table[team_name]["played"], played)
+
+    def test_remaining_fixtures(self):
+        from outrights.api import calc_remaining_fixtures
+        team_names = ["A", "B", "C"]        
+        results = [{"name": "A vs B",
+                    "score": (1, 0)},
+                   {"name": "B vs C",
+                    "score": (2, 2)}]
+        remaining_fixtures = calc_remaining_fixtures(team_names, results)
+        event_names = ['A vs C', 'B vs A', 'C vs A', 'C vs B']
+        for event_name in event_names:
+            self.assertTrue(event_name in remaining_fixtures)
+        self.assertEqual(len(event_names), len(remaining_fixtures))
                 
 if __name__ == "__main__":
     unittest.main()
