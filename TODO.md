@@ -1,12 +1,16 @@
 ### short
 
-- why is std_training_error so high in many cases?
+- test remaining fixtures
+
+- ScoreMatrix.initialise should have default n arg
 
 ### medium
 
 - unit tests
 
 ### thoughts
+
+- why is std_training_error so high in many cases?
 
 - unit tests?
   - not sure it's worth it
