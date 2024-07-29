@@ -1,7 +1,5 @@
 ### short
 
-- test position matrix sums to one
-
 ### medium
 
 ### thoughts
@@ -23,6 +21,7 @@
 
 ### done
 
+- test position matrix sums to one
 - test event normalised probs
 - test remaining fixtures
 - ScoreMatrix.initialise should have default n arg
