@@ -125,8 +125,7 @@ def simulate(team_names, training_set, results, rounds, n_paths):
     for event_name in remaining_fixtures:
         sim_points.simulate(event_name = event_name,
                             ratings = poisson_ratings,
-                            home_advantage = home_advantage,
-                            n_paths = n_paths)
+                            home_advantage = home_advantage)
     position_probabilities = sim_points.position_probabilities
     training_errors = calc_training_errors(team_names = team_names,
                                            events = training_set,

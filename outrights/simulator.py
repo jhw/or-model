@@ -24,11 +24,11 @@ class SimPoints:
         team_index = self.team_names.index(team_name)
         return self.points[team_index]
 
-    def simulate(self, event_name, ratings, home_advantage, n_paths):    
+    def simulate(self, event_name, ratings, home_advantage):    
         matrix = ScoreMatrix.initialise(event_name = event_name,
                                         ratings = ratings,
                                         home_advantage = home_advantage)
-        scores = matrix.simulate_points(n_paths)
+        scores = matrix.simulate_points(self.n_paths)
         self.update_event(event_name, scores)
     
     def update_home_team(self, team_name, scores):
