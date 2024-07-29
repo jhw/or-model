@@ -2,18 +2,9 @@
 
 - why is std_training_error so high in many cases?
 
-### tests
-
-- league table
-- remaining fixtures
-- sum of matrix values
-- matrix orientation
-- simulated scores to correct score probabilities
-- score to points mapping
-- points to position mapping
-- position to probability mapping
-
 ### medium
+
+- unit tests
 
 ### thoughts
 
@@ -32,6 +23,7 @@
 
 ### done
 
+- convert all metrics to float
 - mean, stdev of training_errors
 - position heatmaps
 - update league table

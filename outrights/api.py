@@ -57,7 +57,7 @@ def calc_training_errors(team_names, events, ratings, home_advantage):
         matrix = ScoreMatrix.initialise(event_name = event["name"],
                                         ratings = ratings,
                                         home_advantage = home_advantage)
-        model_home_win, model_draw, model_away_win = matrix.match_odds
+        model_home_win, model_draw, model_away_win = [float(prob) for prob in matrix.match_odds]
         model_home_team_expected_points = 3 * model_home_win + model_draw
         model_away_team_expected_points = 3 * model_away_win + model_draw
         market_home_win, market_draw, market_away_win = Event(event).training_inputs
@@ -79,7 +79,7 @@ def calc_points_per_game_ratings(team_names, ratings, home_advantage):
                 matrix = ScoreMatrix.initialise(event_name = event_name,
                                                 ratings = ratings,
                                                 home_advantage = home_advantage)
-                home_win_prob, draw_prob, away_win_prob = matrix.match_odds
+                home_win_prob, draw_prob, away_win_prob = [float(prob) for prob in matrix.match_odds]
                 ppg_ratings[home_team_name] += 3 * home_win_prob + draw_prob
                 ppg_ratings[away_team_name] += 3 * away_win_prob + draw_prob
     n_games = (len(team_names) - 1) * 2
@@ -95,7 +95,7 @@ def calc_expected_season_points(team_names, results, remaining_fixtures, ratings
         matrix = ScoreMatrix.initialise(event_name = event_name,
                                         ratings = ratings,
                                         home_advantage = home_advantage)
-        home_win_prob, draw_prob, away_win_prob = matrix.match_odds        
+        home_win_prob, draw_prob, away_win_prob = [float(prob) for prob in matrix.match_odds]
         expected_points[home_team_name] += 3 * home_win_prob + draw_prob
         expected_points[away_team_name] += 3 * away_win_prob + draw_prob
     return expected_points                                  
