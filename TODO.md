@@ -2,7 +2,6 @@
 
 - test remaining fixtures
 
-- ScoreMatrix.initialise should have default n arg
 
 ### medium
 
@@ -27,6 +26,7 @@
 
 ### done
 
+- ScoreMatrix.initialise should have default n arg
 - convert all metrics to float
 - mean, stdev of training_errors
 - position heatmaps

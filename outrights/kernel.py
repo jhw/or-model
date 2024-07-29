@@ -19,19 +19,19 @@ def dixon_coles_adjustment(i, j, rho):
 class ScoreMatrix:
 
     @classmethod
-    def initialise(self, event_name, ratings, home_advantage, rho=0.1):
+    def initialise(self, event_name, ratings, home_advantage, n=11, rho=0.1):
         home_team_name, away_team_name = event_name.split(" vs ")
         home_lambda = ratings[home_team_name] * home_advantage
         away_lambda = ratings[away_team_name]
-        return ScoreMatrix(home_lambda, away_lambda, rho)
+        return ScoreMatrix(home_lambda, away_lambda, n, rho)
     
-    def __init__(self, home_lambda, away_lambda, rho):
+    def __init__(self, home_lambda, away_lambda, n, rho):
         self.home_lambda = home_lambda
         self.away_lambda = away_lambda
         self.rho = rho
-        self.matrix = self.init_matrix()
+        self.matrix = self.init_matrix(n)
 
-    def init_matrix(self, n=11):
+    def init_matrix(self, n):
         home_goals = np.arange(n)
         away_goals = np.arange(n)
         home_probs = poisson_prob(self.home_lambda, home_goals[:, np.newaxis])
