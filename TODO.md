@@ -1,7 +1,8 @@
 ### short
 
 - test remaining fixtures
-
+- test position matrix sums to one
+- test event normalised probs
 
 ### medium
 
