@@ -1,5 +1,7 @@
 ### short
 
+- market pricing [notes]
+
 ### medium
 
 ### thoughts
