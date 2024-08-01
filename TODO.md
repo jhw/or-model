@@ -1,7 +1,5 @@
 ### short [01-pricer]
 
-- remove positions properties
-
 ### medium
 
 ### thoughts
@@ -23,6 +21,7 @@
 
 ### done
 
+- remove positions properties
 - test position matrix sums to one
 - test event normalised probs
 - test remaining fixtures

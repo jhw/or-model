@@ -51,19 +51,19 @@ class SimPoints:
         self.update_away_team(away_team_name, scores)
 
     def position_probabilities(self, team_names = None):
-        if not team_names:
+        if team_names is None:
             team_names = self.team_names
-        points = np.array([self.points[i]
-                           for i, row in enumerate(self.points)
-                           if self.team_names[i] in team_names])
+        mask = np.isin(self.team_names, team_names)
+        points = self.points[mask]
         positions = len(points) - np.argsort(np.argsort(points, axis=0), axis=0) - 1
         counts = np.zeros((len(points), len(points)))
         for i, row in enumerate(positions):
             for j in row:
                 counts[i][j] += 1
         probabilities = counts / self.n_paths
-        return {team_name:[float(value) for value in list(row)]
-                for team_name, row in zip(team_names, probabilities)}
+        return {str(team_name): probabilities[i].tolist()
+                for i, team_name in enumerate(np.array(self.team_names)[mask])}
+
     
 if __name__=="__main__":
     pass

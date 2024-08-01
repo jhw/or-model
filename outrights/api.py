@@ -126,7 +126,7 @@ def simulate(team_names, training_set, results, rounds, n_paths):
         sim_points.simulate(event_name = event_name,
                             ratings = poisson_ratings,
                             home_advantage = home_advantage)
-    position_probabilities = sim_points.position_probabilities()
+    position_probs = sim_points.position_probabilities()
     training_errors = calc_training_errors(team_names = team_names,
                                            events = training_set,
                                            ratings = poisson_ratings,
@@ -147,7 +147,7 @@ def simulate(team_names, training_set, results, rounds, n_paths):
                      "poisson_rating": poisson_ratings[team["name"]],
                      "points_per_game_rating": ppg_ratings[team["name"]],
                      "expected_season_points": season_points[team["name"]],
-                     "position_probabilities": position_probabilities[team["name"]]})
+                     "position_probabilities": position_probs[team["name"]]})
     return {"teams": league_table,
             "home_advantage": home_advantage,
             "solver_error": solver_error}
