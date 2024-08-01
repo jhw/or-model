@@ -1,5 +1,13 @@
 ### short [01-pricer]
 
+- pass markets to api
+- calculate market groups
+- calculate positions for each market group
+- return Default group as position_probabilities
+- value payoff
+- assert payoff versus len(matrix)
+- calculate and return marks
+
 ### medium
 
 ### thoughts

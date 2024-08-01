@@ -46,7 +46,7 @@ class ModelTest(unittest.TestCase):
                                        "B": 1},
                             home_advantage = 1.2)
         for team_names in [["A", "B"],
-                           ["A"]]:
+                           ["A"]]: # test mask
             position_probs = sim_points.position_probabilities(team_names = team_names)
             self.assertEqual(len(team_names), len(position_probs))
             for team_name in team_names:
