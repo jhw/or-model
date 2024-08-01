@@ -45,7 +45,7 @@ class ModelTest(unittest.TestCase):
                             ratings = {"A": 1,
                                        "B": 1},
                             home_advantage = 1.2)
-        position_probs = sim_points.position_probabilities
+        position_probs = sim_points.position_probabilities()
         for team_name in ["A", "B"]:
             self.assertAlmostEqual(sum(position_probs[team_name]), 1)
                 

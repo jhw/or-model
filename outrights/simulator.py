@@ -50,19 +50,20 @@ class SimPoints:
         self.update_home_team(home_team_name, scores)
         self.update_away_team(away_team_name, scores)
 
-    @property
     def positions(self):
         return len(self.points) - np.argsort(np.argsort(self.points, axis=0), axis=0) - 1
 
-    @property
     def position_probabilities(self):
-        counts = np.zeros((len(self.points), len(self.points)))
-        for i, row in enumerate(self.positions):
+        team_names = self.team_names
+        points = self.points
+        positions = self.positions()
+        counts = np.zeros((len(points), len(points)))
+        for i, row in enumerate(positions):
             for j in row:
                 counts[i][j] += 1
         probabilities = counts / self.n_paths
         return {team_name:[float(value) for value in list(row)]
-                for team_name, row in zip(self.team_names, probabilities)}
+                for team_name, row in zip(team_names, probabilities)}
     
 if __name__=="__main__":
     pass

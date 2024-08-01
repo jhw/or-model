@@ -1,6 +1,6 @@
-### short
+### short [01-pricer]
 
-- market pricing [notes]
+- remove positions properties
 
 ### medium
 

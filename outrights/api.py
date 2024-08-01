@@ -126,7 +126,7 @@ def simulate(team_names, training_set, results, rounds, n_paths):
         sim_points.simulate(event_name = event_name,
                             ratings = poisson_ratings,
                             home_advantage = home_advantage)
-    position_probabilities = sim_points.position_probabilities
+    position_probabilities = sim_points.position_probabilities()
     training_errors = calc_training_errors(team_names = team_names,
                                            events = training_set,
                                            ratings = poisson_ratings,
