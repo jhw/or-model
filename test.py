@@ -33,7 +33,7 @@ class ModelTest(unittest.TestCase):
                                 if score == target]) / n_paths
                 self.assertTrue(abs(sim_prob - matrix.matrix[i][j]) < 0.01)
 
-    def test_points_simulation(self):
+    def test_position_probabilities(self):
         from outrights.simulator import SimPoints
         sim_points = SimPoints(league_table = [{"name": name,
                                                 "points": 0,
@@ -45,9 +45,12 @@ class ModelTest(unittest.TestCase):
                             ratings = {"A": 1,
                                        "B": 1},
                             home_advantage = 1.2)
-        position_probs = sim_points.position_probabilities()
-        for team_name in ["A", "B"]:
-            self.assertAlmostEqual(sum(position_probs[team_name]), 1)
+        for team_names in [["A", "B"],
+                           ["A"]]:
+            position_probs = sim_points.position_probabilities(team_names = team_names)
+            self.assertEqual(len(team_names), len(position_probs))
+            for team_name in team_names:
+                self.assertAlmostEqual(sum(position_probs[team_name]), 1)
                 
     def test_league_table(self):
         from outrights.api import calc_league_table
