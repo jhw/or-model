@@ -2,6 +2,8 @@ from outrights.api import simulate
 import fd_scraper as fd
 import json, urllib.request
 
+Markets = json.loads(open("demo/markets.json").read())
+
 def fetch_leagues():
     return json.loads(urllib.request.urlopen("https://teams.outrights.net/list-leagues").read())
 
@@ -51,9 +53,10 @@ if __name__=="__main__":
         print ("%s TS events [%s -> %s]" % (len(training_set),
                                             training_set[0]["date"],
                                             training_set[-1]["date"]))
+        markets = [market for market in Markets
+                   if market["league"] == league_name]
+        print ("%i markets" % len(markets))        
         print ("simulating")
-        markets = [{"name": "Winner",
-                    "payoff": "1|%ix0" % (len(team_names)-1)}]
         rounds = 2 if league_name.startswith("SCO") else 1
         resp = simulate(team_names = team_names,
                         results = results,

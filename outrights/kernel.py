@@ -41,15 +41,15 @@ class ScoreMatrix:
 
     @property
     def home_win(self, home_handicap_offset = 0):
-        return np.sum(np.tril(self.matrix, -1 + home_handicap_offset))
+        return float(np.sum(np.tril(self.matrix, -1 + home_handicap_offset)))
 
     @property
     def draw(self):
-        return np.sum(np.diag(self.matrix))
+        return float(np.sum(np.diag(self.matrix)))
 
     @property
     def away_win(self, home_handicap_offset = 0):
-        return np.sum(np.triu(self.matrix, 1 + home_handicap_offset))
+        return float(np.sum(np.triu(self.matrix, 1 + home_handicap_offset)))
 
     def normalise(fn):
         def wrapped(self):

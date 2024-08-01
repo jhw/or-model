@@ -1,6 +1,6 @@
 ### short [01-pricer]
 
-- add and filter markets.json
+- add markets test to test.py
 
 ### medium
 
@@ -23,6 +23,7 @@
 
 ### done
 
+- add and filter markets.json
 - pass markets to api
 - calculate market groups
 - calculate positions for each market group
