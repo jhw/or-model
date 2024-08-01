@@ -57,9 +57,7 @@ class SimPoints:
         points = self.points[mask]
         positions = len(points) - np.argsort(np.argsort(points, axis=0), axis=0) - 1
         counts = np.zeros((len(points), len(points)))
-        for i, row in enumerate(positions):
-            for j in row:
-                counts[i][j] += 1
+        np.add.at(counts, (np.arange(len(points))[:, None], positions), 1)
         probabilities = counts / self.n_paths
         return {str(team_name): probabilities[i].tolist()
                 for i, team_name in enumerate(np.array(self.team_names)[mask])}
