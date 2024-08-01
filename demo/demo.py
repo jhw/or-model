@@ -52,10 +52,13 @@ if __name__=="__main__":
                                             training_set[0]["date"],
                                             training_set[-1]["date"]))
         print ("simulating")
+        markets = [{"name": "Winner",
+                    "payoff": "1|%ix0" % (len(team_names)-1)}]
         rounds = 2 if league_name.startswith("SCO") else 1
         resp = simulate(team_names = team_names,
                         results = results,
                         training_set = training_set,
+                        markets = markets,
                         rounds = rounds,
                         n_paths = n_paths)
         print ("home_advantage: %.5f" % resp["home_advantage"])

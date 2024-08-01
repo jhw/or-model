@@ -53,7 +53,7 @@ class ModelTest(unittest.TestCase):
                 self.assertAlmostEqual(sum(position_probs[team_name]), 1)
                 
     def test_league_table(self):
-        from outrights.api import calc_league_table
+        from outrights.state import calc_league_table
         team_names = ["A", "B", "C"]        
         results = [{"name": "A vs B",
                     "score": (1, 0)},
@@ -70,7 +70,7 @@ class ModelTest(unittest.TestCase):
             self.assertEqual(table[team_name]["played"], played)
 
     def test_remaining_fixtures(self):
-        from outrights.api import calc_remaining_fixtures
+        from outrights.state import calc_remaining_fixtures
         team_names = ["A", "B", "C"]        
         results = [{"name": "A vs B",
                     "score": (1, 0)},

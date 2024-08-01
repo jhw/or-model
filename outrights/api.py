@@ -1,54 +1,33 @@
 from outrights.kernel import ScoreMatrix
+from outrights.markets import init_markets
 from outrights.solver import RatingsSolver, Event
 from outrights.simulator import SimPoints
+from outrights.state import calc_league_table, calc_remaining_fixtures
+from outrights.stats import mean, standard_deviation
 
-def calc_league_table(team_names, results):
-    # Initialize league table with team names
-    league_table = {team_name: {'name': team_name,
-                                'played': 0,
-                                'points': 0,
-                                'goal_difference': 0} for team_name in team_names}
+def sum_product(X, Y):
+    return sum([x*y for x, y in zip(X, Y)])
 
-    for result in results:
-        home_team, away_team = result['name'].split(' vs ')
-        home_score, away_score = result['score']
+def calc_position_probabilities(sim_points, markets):
+    position_probs = {"default": sim_points.position_probabilities()}
+    for market in markets:
+        if ("include" in market or
+            "exclude" in market):
+            position_probs[market["name"]] = sim_points.position_probabilities(teams_names = market["teams"])
+    return position_probs
 
-        # Update games played
-        league_table[home_team]['played'] += 1
-        league_table[away_team]['played'] += 1
-
-        # Update goal difference
-        goal_difference = home_score - away_score
-        league_table[home_team]['goal_difference'] += goal_difference
-        league_table[away_team]['goal_difference'] -= goal_difference
-
-        # Update points
-        if home_score > away_score:
-            league_table[home_team]['points'] += 3
-        elif away_score > home_score:
-            league_table[away_team]['points'] += 3
-        else:
-            league_table[home_team]['points'] += 1
-            league_table[away_team]['points'] += 1
-
-    # Convert to a list and sort by points and then by goal difference
-    league_table_list = sorted(league_table.values(), key=lambda x: (x['points'], x['goal_difference']), reverse=True)
-
-    return league_table_list
-
-def calc_remaining_fixtures(team_names, results, rounds = 1):
-    counts={}
-    for home_team_name in team_names:
-        for away_team_name in team_names:
-            if home_team_name != away_team_name:    
-                counts[f"{home_team_name} vs {away_team_name}"] = rounds
-    for result in results:
-        counts[result["name"]]-=1
-    event_names = []
-    for event_name, n in counts.items():
-        for i in range(n):
-            event_names.append(event_name)
-    return event_names
+def calc_marks(position_probabilities, markets):
+    marks = []
+    for market in markets:
+        position_probs_key = market["name"] if ("include" in market or "exclude" in market) else "default"
+        position_probs = position_probabilities[position_probs_key]        
+        for team_name in market["teams"]:
+            mark_value = sum_product(position_probs[team_name], market["payoff"])
+            mark = {"market": market["name"],
+                    "team": team_name,
+                    "mark": mark_value}
+            marks.append(mark)
+    return marks
 
 def calc_training_errors(team_names, events, ratings, home_advantage):
     errors = {team_name: [] for team_name in team_names}
@@ -68,7 +47,6 @@ def calc_training_errors(team_names, events, ratings, home_advantage):
         errors[home_team_name].append(home_team_error)
         errors[away_team_name].append(away_team_error)
     return errors
-
 
 def calc_points_per_game_ratings(team_names, ratings, home_advantage):
     ppg_ratings = {team_name: 0 for team_name in team_names}
@@ -100,17 +78,11 @@ def calc_expected_season_points(team_names, results, remaining_fixtures, ratings
         expected_points[away_team_name] += 3 * away_win_prob + draw_prob
     return expected_points                                  
 
-def mean(X):
-    return sum(X)/len(X) if X != [] else 0
-
-def variance(X):
-    m = mean(X)
-    return sum([(x-m)**2 for x in X])
-
-def standard_deviation(X):
-    return variance(X)**0.5
-
-def simulate(team_names, training_set, results, rounds, n_paths):
+def simulate(team_names, training_set, n_paths,
+             results=[],
+             markets=[],
+             rounds=1):
+    init_markets(team_names, markets)
     league_table = calc_league_table(team_names = team_names,
                                      results = results)
     remaining_fixtures = calc_remaining_fixtures(team_names = team_names,
@@ -126,7 +98,10 @@ def simulate(team_names, training_set, results, rounds, n_paths):
         sim_points.simulate(event_name = event_name,
                             ratings = poisson_ratings,
                             home_advantage = home_advantage)
-    position_probs = sim_points.position_probabilities()
+    position_probs = calc_position_probabilities(sim_points = sim_points,
+                                                 markets = markets)
+    marks = calc_marks(position_probabilities = position_probs,
+                       markets = markets)
     training_errors = calc_training_errors(team_names = team_names,
                                            events = training_set,
                                            ratings = poisson_ratings,
@@ -147,8 +122,9 @@ def simulate(team_names, training_set, results, rounds, n_paths):
                      "poisson_rating": poisson_ratings[team["name"]],
                      "points_per_game_rating": ppg_ratings[team["name"]],
                      "expected_season_points": season_points[team["name"]],
-                     "position_probabilities": position_probs[team["name"]]})
+                     "position_probabilities": position_probs["default"][team["name"]]})
     return {"teams": league_table,
+            "marks": marks,
             "home_advantage": home_advantage,
             "solver_error": solver_error}
 
