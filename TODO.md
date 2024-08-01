@@ -1,6 +1,6 @@
 ### short [01-pricer]
 
-- add markets test to test.py
+- add a markets test to test.py
 
 ### medium
 
@@ -8,8 +8,6 @@
 
 - why is std_training_error so high in many cases?
 
-- unit tests?
-  - not sure it's worth it
 - why doesn't OU give a better fit?
   - is draw fitting a proxy for OU fit?
 - better AH data?

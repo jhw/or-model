@@ -40,15 +40,15 @@ class ScoreMatrix:
         return home_probs * away_probs * dixon_coles_matrix
 
     @property
-    def home_win(self, home_handicap_offset = 0):
+    def _home_win(self, home_handicap_offset = 0):
         return float(np.sum(np.tril(self.matrix, -1 + home_handicap_offset)))
 
     @property
-    def draw(self):
+    def _draw(self):
         return float(np.sum(np.diag(self.matrix)))
 
     @property
-    def away_win(self, home_handicap_offset = 0):
+    def _away_win(self, home_handicap_offset = 0):
         return float(np.sum(np.triu(self.matrix, 1 + home_handicap_offset)))
 
     def normalise(fn):
@@ -61,8 +61,18 @@ class ScoreMatrix:
     @property
     @normalise
     def match_odds(self):
-        return [self.home_win, self.draw, self.away_win]
+        return [self._home_win, self._draw, self._away_win]
 
+    @property
+    def expected_home_points(self):
+        match_odds = self.match_odds
+        return 3 * match_odds[0] + match_odds[1]
+
+    @property
+    def expected_away_points(self):
+        match_odds = self.match_odds
+        return 3 * match_odds[2] + match_odds[1]
+            
     @property
     def training_inputs(self):
         return self.match_odds

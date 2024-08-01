@@ -18,6 +18,16 @@ class Event(dict):
         return self.probabilities("match_odds")
 
     @property
+    def expected_home_points(self):
+        match_odds = self.match_odds
+        return 3 * match_odds[0] + match_odds[1]
+
+    @property
+    def expected_away_points(self):
+        match_odds = self.match_odds
+        return 3 * match_odds[2] + match_odds[1]
+
+    @property
     def training_inputs(self):
         return self.match_odds
 

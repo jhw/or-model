@@ -1,7 +1,7 @@
 def parse_payoff(payoff_expr):
     payoff=[]
     for expr in payoff_expr.split("|"):
-        tokens=[float(tok) # allow championship playoffs 0.25
+        tokens=[float(tok) # championship playoffs 0.25
                 for tok in expr.split("x")]
         if len(tokens)==1:            
             n, v = 1, tokens[0]
