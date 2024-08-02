@@ -1,4 +1,6 @@
-### short [01-pricer]
+### short
+
+- move unit tests into modules?
 
 ### medium
 

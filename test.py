@@ -7,8 +7,10 @@ class ModelTest(unittest.TestCase):
     def test_event(self):
         from outrights.solver import Event
         event = Event({"name": "A vs B",
-                       "match_odds": {"prices": [2.5, 2.5, 2.5]}})
+                       "match_odds": {"prices": [2, 3.333333333333, 5]}})
         self.assertAlmostEqual(sum(event.training_inputs), 1)
+        self.assertAlmostEqual(event.expected_home_points, 1.8)
+        self.assertAlmostEqual(event.expected_away_points, 0.9)
     
     def test_score_matrix_dimensionality(self):
         from outrights.kernel import ScoreMatrix
@@ -33,7 +35,7 @@ class ModelTest(unittest.TestCase):
                                 if score == target]) / n_paths
                 self.assertTrue(abs(sim_prob - matrix.matrix[i][j]) < 0.01)
 
-    def test_sim_points_probabilities(self):
+    def test_sim_points_position_probabilities(self):
         from outrights.simulator import SimPoints
         sim_points = SimPoints(league_table = [{"name": name,
                                                 "points": 0,

@@ -16,14 +16,16 @@ def calc_position_probabilities(sim_points, markets):
 def calc_training_errors(team_names, events, ratings, home_advantage):
     errors = {team_name: [] for team_name in team_names}
     for event in events:
+
         home_team_name, away_team_name = event["name"].split(" vs ")
         matrix = ScoreMatrix.initialise(event_name = event["name"],
                                         ratings = ratings,
                                         home_advantage = home_advantage)
-        home_team_error = matrix.expected_home_points - Event(event).expected_home_points
-        away_team_error = matrix.expected_away_points - Event(event).expected_away_points
-        errors[home_team_name].append(home_team_error)
-        errors[away_team_name].append(away_team_error)
+        event = Event(event)
+        home_team_err = matrix.expected_home_points - event.expected_home_points
+        away_team_err = matrix.expected_away_points - event.expected_away_points
+        errors[home_team_name].append(home_team_err)
+        errors[away_team_name].append(away_team_err)
     return errors
 
 def calc_points_per_game_ratings(team_names, ratings, home_advantage):
