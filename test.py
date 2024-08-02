@@ -33,7 +33,7 @@ class ModelTest(unittest.TestCase):
                                 if score == target]) / n_paths
                 self.assertTrue(abs(sim_prob - matrix.matrix[i][j]) < 0.01)
 
-    def test_position_probabilities(self):
+    def test_sim_points_probabilities(self):
         from outrights.simulator import SimPoints
         sim_points = SimPoints(league_table = [{"name": name,
                                                 "points": 0,
@@ -81,6 +81,21 @@ class ModelTest(unittest.TestCase):
         for event_name in event_names:
             self.assertTrue(event_name in remaining_fixtures)
         self.assertEqual(len(event_names), len(remaining_fixtures))
-                
+
+    def test_markets(self):
+        from outrights.markets import init_markets
+        try:
+            init_markets(team_names = ["A", "B", "C"],
+                         markets = [{"name": "Standard",
+                                     "payoff": "1|2x0"},
+                                    {"name": "Include",
+                                     "payoff": "1|0",
+                                     "include": ["A", "B"]},
+                                    {"name": "Exclude",
+                                     "payoff": "1|0",
+                                     "exclude": "A"}])
+        except Exception as error:
+            self.fail(str(error))
+            
 if __name__ == "__main__":
     unittest.main()

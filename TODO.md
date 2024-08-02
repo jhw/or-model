@@ -1,7 +1,5 @@
 ### short [01-pricer]
 
-- add a markets test to test.py
-
 ### medium
 
 ### thoughts
@@ -21,6 +19,7 @@
 
 ### done
 
+- add a markets test to test.py
 - add and filter markets.json
 - pass markets to api
 - calculate market groups
