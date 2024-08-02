@@ -1,4 +1,0 @@
-matplotlib
-pyyaml
-requests
-seaborn
