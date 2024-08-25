@@ -24,7 +24,7 @@ def init_include_market(team_names, market):
     unknown = [team_name for team_name in market["include"]
                if team_name not in team_names]
     if unknown != []:
-        raise RuntimeError("%s market has unknown teams %s" % (market["mame"], ", ".join(unknown)))
+        raise RuntimeError("%s market has unknown teams %s" % (market["name"], ", ".join(unknown)))
     market["teams"] = market["include"]
 
 @init_payoff
@@ -32,7 +32,7 @@ def init_exclude_market(team_names, market):
     unknown = [team_name for team_name in market["exclude"]
                if team_name not in team_names]
     if unknown != []:
-        raise RuntimeError("%s market has unknown teams %s" % (market["mame"], ", ".join(unknown)))
+        raise RuntimeError("%s market has unknown teams %s" % (market["name"], ", ".join(unknown)))
     market["teams"] = [team_name for team_name in team_names
                        if team_name not in market["exclude"]]
 
