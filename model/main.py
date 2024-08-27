@@ -1,9 +1,9 @@
-from outrights.kernel import ScoreMatrix
-from outrights.markets import init_markets
-from outrights.solver import RatingsSolver, Event
-from outrights.simulator import SimPoints
-from outrights.state import calc_league_table, calc_remaining_fixtures
-from outrights.stats import mean, std_deviation
+from model.kernel import ScoreMatrix
+from model.markets import init_markets
+from model.solver import RatingsSolver, Event
+from model.simulator import SimPoints
+from model.state import calc_league_table, calc_remaining_fixtures
+from model.stats import mean, std_deviation
 
 def calc_position_probabilities(sim_points, markets):
     position_probs = {"default": sim_points.position_probabilities()}

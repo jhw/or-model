@@ -5,7 +5,7 @@ import unittest
 class ModelTest(unittest.TestCase):
 
     def test_event(self):
-        from outrights.solver import Event
+        from model.solver import Event
         event = Event({"name": "A vs B",
                        "match_odds": {"prices": [2, 3.333333333333, 5]}})
         self.assertAlmostEqual(sum(event.match_odds), 1)
@@ -13,7 +13,7 @@ class ModelTest(unittest.TestCase):
         self.assertAlmostEqual(event.expected_away_points, 0.9)
     
     def test_score_matrix_dimensionality(self):
-        from outrights.kernel import ScoreMatrix
+        from model.kernel import ScoreMatrix
         matrix = ScoreMatrix.initialise(event_name = "A vs B",
                                         ratings = {"A": 1,
                                                    "B": 1},
@@ -22,7 +22,7 @@ class ModelTest(unittest.TestCase):
         self.assertTrue(np.sum(np.tril(matrix.matrix)) > np.sum(np.triu(matrix.matrix)))
 
     def test_score_matrix_simulation(self, n_paths = 10000, n = 5):
-        from outrights.kernel import ScoreMatrix
+        from model.kernel import ScoreMatrix
         matrix = ScoreMatrix.initialise(event_name = "A vs B",
                                         ratings = {"A": 1,
                                                    "B": 1},
@@ -36,7 +36,7 @@ class ModelTest(unittest.TestCase):
                 self.assertTrue(abs(sim_prob - matrix.matrix[i][j]) < 0.01)
 
     def test_sim_points_position_probabilities(self):
-        from outrights.simulator import SimPoints
+        from model.simulator import SimPoints
         sim_points = SimPoints(league_table = [{"name": name,
                                                 "points": 0,
                                                 "played": 0,
@@ -55,7 +55,7 @@ class ModelTest(unittest.TestCase):
                 self.assertAlmostEqual(sum(position_probs[team_name]), 1)
                 
     def test_league_table(self):
-        from outrights.state import calc_league_table
+        from model.state import calc_league_table
         team_names = ["A", "B", "C"]        
         results = [{"name": "A vs B",
                     "score": (1, 0)},
@@ -72,7 +72,7 @@ class ModelTest(unittest.TestCase):
             self.assertEqual(table[team_name]["played"], played)
 
     def test_remaining_fixtures(self):
-        from outrights.state import calc_remaining_fixtures
+        from model.state import calc_remaining_fixtures
         team_names = ["A", "B", "C"]        
         results = [{"name": "A vs B",
                     "score": (1, 0)},
@@ -85,7 +85,7 @@ class ModelTest(unittest.TestCase):
         self.assertEqual(len(event_names), len(remaining_fixtures))
 
     def test_markets(self):
-        from outrights.markets import init_markets
+        from model.markets import init_markets
         try:
             init_markets(team_names = ["A", "B", "C"],
                          markets = [{"name": "Standard",

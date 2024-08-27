@@ -1,4 +1,4 @@
-from outrights.kernel import ScoreMatrix
+from model.kernel import ScoreMatrix
 from scipy.optimize import minimize
 import numpy as np
 import random

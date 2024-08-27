@@ -3,8 +3,6 @@
 - test solver with and without home_advantage specified
 - add ratings options to solver [either/or with team_names]
 - separate tests
-- rename outrights as model
-- rename api as main
 - asian handicaps
 - over/under goals
 
@@ -27,6 +25,8 @@
 
 ### done
 
+- rename outrights as model
+- rename api as main
 - remove specification of training_data as match_odds
 - add a markets test to test.py
 - add and filter markets.json
