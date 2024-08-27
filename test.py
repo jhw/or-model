@@ -48,10 +48,10 @@ class ModelTest(unittest.TestCase):
         self.assertTrue(solver_resp["error"] < 0.1)
         self.assertEqual(solver_resp["home_advantage"], home_advantage)
 
-    def test_ratings_and_home_advantage_solver(self,
-                                               team_names = ["Man City",
-                                                             "Liverpool",
-                                                             "Arsenal"]):
+    def test_ratings_and_bias_solver(self,
+                                     team_names = ["Man City",
+                                                   "Liverpool",
+                                                   "Arsenal"]):
         all_events = None
         with open("fixtures/ENG1.json") as f:
             all_events = json.loads(f.read())
@@ -61,14 +61,13 @@ class ModelTest(unittest.TestCase):
             if (home_team_name in team_names and
                 away_team_name in team_names):
                 events.append(event)
-        from model.solver import RatingsSolver
-        solver_resp=RatingsSolver().solve(events = events,
-                                          team_names = team_names,
-                                          max_iterations = 1000)
+        from model.solver import RatingsSolver, HomeAdvantageRange
+        solver_resp = RatingsSolver().solve(events = events,
+                                            team_names = team_names,
+                                            max_iterations = 1000)
         self.assertTrue(solver_resp["error"] < 0.1)
-        self.assertTrue(solver_resp["home_advantage"] < 1.5 and
-                        solver_resp["home_advantage"] > 1.1)
-
+        initial_bias = sum(HomeAdvantageRange) / 2
+        self.assertTrue(abs(solver_resp["home_advantage"] - initial_bias) > 0.01)
                 
     def test_sim_points_position_probabilities(self):
         from model.simulator import SimPoints

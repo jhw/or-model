@@ -3,6 +3,9 @@ from scipy.optimize import minimize
 import numpy as np
 import random
 
+RatingRange = (0, 6)
+HomeAdvantageRange = (1, 1.5)
+
 class Event(dict):
 
     def __init__(self, event):
@@ -27,7 +30,6 @@ class Event(dict):
         match_odds = self.match_odds
         return 3 * match_odds[2] + match_odds[1]
 
-
 class Ratings(dict):
 
     def __init__(self, team_names):
@@ -50,10 +52,11 @@ class RatingsSolver:
                   for event, matrix in zip(events, matrices)]
         return np.mean(errors)
 
-    def optimise_ratings(self, events, ratings, home_advantage, max_iterations):
+    def optimise_ratings(self, events, ratings, home_advantage, max_iterations,
+                         rating_range = RatingRange):
         team_names = sorted(list(ratings.keys()))
         initial_ratings = [ratings[team_name] for team_name in team_names]
-        bounds = [(0, 6)] * len(initial_ratings)
+        bounds = [rating_range] * len(initial_ratings)
 
         def objective(params):
             for i, team in enumerate(team_names):
@@ -69,13 +72,15 @@ class RatingsSolver:
                           options={'maxiter': max_iterations})
         for i, team in enumerate(team_names):
             ratings[team] = result.x[i]
-        return ratings
     
-    def optimise_ratings_and_home_advantage(self, events, ratings, max_iterations):
+    def optimise_ratings_and_bias(self, events, ratings, max_iterations,
+                                  rating_range = RatingRange,
+                                  bias_range = HomeAdvantageRange):
         team_names = sorted(list(ratings.keys()))
         initial_ratings = [ratings[team_name] for team_name in team_names]
-        initial_params = initial_ratings + [1.25]
-        bounds = [(0, 6)] * len(initial_ratings) + [(1, 1.5)]
+        initial_bias = sum(bias_range) / 2
+        initial_params = initial_ratings + [initial_bias]
+        bounds = [rating_range] * len(initial_ratings) + [bias_range]
 
         def objective(params):
             for i, team in enumerate(team_names):
@@ -92,22 +97,22 @@ class RatingsSolver:
                           options={'maxiter': max_iterations})
         for i, team in enumerate(team_names):
             ratings[team] = result.x[i]
-        home_advantage = result.x[-1]
-        return ratings, home_advantage
+        home_advantage = result.x[-1]        
+        return home_advantage
 
     def solve(self, team_names, events,
               home_advantage = None,
               max_iterations = 100):
-        initial_ratings = Ratings(team_names)
+        ratings = Ratings(team_names)
         if home_advantage:
-            ratings = self.optimise_ratings(events = events,
-                                            ratings = initial_ratings,
-                                            home_advantage = home_advantage,
-                                            max_iterations = max_iterations)
+            self.optimise_ratings(events = events,
+                                  ratings = ratings,
+                                  home_advantage = home_advantage,
+                                  max_iterations = max_iterations)
         else:
-            ratings, home_advantage = self.optimise_ratings_and_home_advantage(events = events,
-                                                                               ratings = initial_ratings,
-                                                                               max_iterations = max_iterations)
+            home_advantage = self.optimise_ratings_and_bias(events = events,
+                                                            ratings = ratings,
+                                                            max_iterations = max_iterations)
         error = self.calc_error(events = events,
                                 ratings = ratings,
                                 home_advantage = home_advantage)
