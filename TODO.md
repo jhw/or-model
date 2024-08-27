@@ -1,16 +1,21 @@
 ### short
 
-- clean up ratings vs initial ratings, and ratings being returned from solver
-- script to parse mini league of top teams
-- test for ratings / home_advantage solver
+- dump ENG1 from fd parser
+- ensure scores and prices are included
+- ensure format is as solver wants it (match_odds -> prices)
+- test for ratings home advantage solver, using mini- league
+- wrap home_advantage in a class
+- clean up ratings/initial ratings
+- pass selector_fn to solver
+
+### medium
+
 - allow solver to be populated with team names or ratings but not both
 - test effect on optimisation time of using ratings arg not (randomised) team names
 - add demo to main 
 - split tests into separate packages
 - asian handicaps
 - over/under goals
-
-### medium
 
 ### thoughts
 
