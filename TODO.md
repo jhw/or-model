@@ -1,11 +1,11 @@
 ### short
 
+- add demo to main 
 
 - test effect on optimisation time of using ratings arg not (randomised) team names
 
 ### medium
 
-- add demo to main 
 - split tests into separate packages
 
 - asian handicaps

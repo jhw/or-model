@@ -44,16 +44,16 @@ class ScoreMatrix:
         return len(self.matrix)
     
     @property
-    def _home_win(self, home_handicap_offset = 0):
-        return float(np.sum(np.tril(self.matrix, -1 + home_handicap_offset)))
+    def _home_win(self):
+        return float(np.sum(np.tril(self.matrix, -1)))
 
     @property
     def _draw(self):
         return float(np.sum(np.diag(self.matrix)))
 
     @property
-    def _away_win(self, home_handicap_offset = 0):
-        return float(np.sum(np.triu(self.matrix, 1 + home_handicap_offset)))
+    def _away_win(self):
+        return float(np.sum(np.triu(self.matrix, 1)))
 
     def normalise(fn):
         def wrapped(self):
@@ -76,10 +76,6 @@ class ScoreMatrix:
     def expected_away_points(self):
         match_odds = self.match_odds
         return 3 * match_odds[2] + match_odds[1]
-            
-    @property
-    def training_inputs(self):
-        return self.match_odds
 
     def simulate_points(self, n_paths):
         flat_matrix = self.matrix.flatten() 
