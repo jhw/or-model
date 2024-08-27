@@ -1,13 +1,14 @@
 ### short
 
-- pass selector_fn to solver
+- allow solver to be populated with team names or ratings but not both
+- test effect on optimisation time of using ratings arg not (randomised) team names
 
 ### medium
 
-- allow solver to be populated with team names or ratings but not both
-- test effect on optimisation time of using ratings arg not (randomised) team names
 - add demo to main 
+
 - split tests into separate packages
+
 - asian handicaps
 - over/under goals
 
@@ -28,6 +29,7 @@
 
 ### done
 
+- pass selector_fn to solver
 - stop returning ratings
 - wrap home_advantage in a class
 - clean up ratings/initial ratings

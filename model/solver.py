@@ -39,6 +39,9 @@ class Ratings(dict):
 
 class RatingsSolver:
 
+    def __init__(self, selector_fn = lambda x: getattr(x, "match_odds")):
+        self.selector_fn = selector_fn
+    
     def rms_error(self, X, Y):
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
 
@@ -47,13 +50,13 @@ class RatingsSolver:
                                            ratings = ratings,
                                            home_advantage = home_advantage)
                     for event in events]        
-        errors = [self.rms_error(matrix.match_odds,
-                                 Event(event).match_odds)
+        errors = [self.rms_error(self.selector_fn(matrix),
+                                 self.selector_fn(Event(event)))
                   for event, matrix in zip(events, matrices)]
         return np.mean(errors)
 
-    def optimise_ratings(self, events, ratings, home_advantage, max_iterations,
-                         rating_range = RatingRange):
+    def optimise_ratings_only(self, events, ratings, home_advantage, max_iterations,
+                              rating_range = RatingRange):
         team_names = sorted(list(ratings.keys()))
         initial_ratings = [ratings[team_name] for team_name in team_names]
         bounds = [rating_range] * len(initial_ratings)
@@ -105,10 +108,10 @@ class RatingsSolver:
               max_iterations = 100):
         ratings = Ratings(team_names)
         if home_advantage:
-            self.optimise_ratings(events = events,
-                                  ratings = ratings,
-                                  home_advantage = home_advantage,
-                                  max_iterations = max_iterations)
+            self.optimise_ratings_only(events = events,
+                                       ratings = ratings,
+                                       home_advantage = home_advantage,
+                                       max_iterations = max_iterations)
         else:
             home_advantage = self.optimise_ratings_and_bias(events = events,
                                                             ratings = ratings,
