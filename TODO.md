@@ -1,6 +1,6 @@
 ### short
 
-- allow solver to be populated with team names or ratings but not both
+- apply init_ratings to solve()
 - test effect on optimisation time of using ratings arg not (randomised) team names
 
 ### medium
@@ -29,6 +29,7 @@
 
 ### done
 
+- allow solver to be populated with team names or ratings but not both
 - pass selector_fn to solver
 - stop returning ratings
 - wrap home_advantage in a class
