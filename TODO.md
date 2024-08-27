@@ -1,8 +1,12 @@
 ### short
 
-- test solver with and without home_advantage specified
-- add ratings options to solver [either/or with team_names]
-- separate tests
+- clean up ratings vs initial ratings, and ratings being returned from solver
+- script to parse mini league of top teams
+- test for ratings / home_advantage solver
+- allow solver to be populated with team names or ratings but not both
+- test effect on optimisation time of using ratings arg not (randomised) team names
+- add demo to main 
+- split tests into separate packages
 - asian handicaps
 - over/under goals
 

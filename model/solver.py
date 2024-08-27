@@ -27,12 +27,7 @@ class Event(dict):
         match_odds = self.match_odds
         return 3 * match_odds[2] + match_odds[1]
 
-    """
-    @property
-    def training_inputs(self):
-        return self.match_odds
-    """
-    
+
 class Ratings(dict):
 
     def __init__(self, team_names):
@@ -50,8 +45,8 @@ class RatingsSolver:
                                            ratings = ratings,
                                            home_advantage = home_advantage)
                     for event in events]        
-        errors = [self.rms_error(matrix.training_inputs,
-                                 Event(event).training_inputs)
+        errors = [self.rms_error(matrix.match_odds,
+                                 Event(event).match_odds)
                   for event, matrix in zip(events, matrices)]
         return np.mean(errors)
 

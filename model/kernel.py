@@ -40,6 +40,10 @@ class ScoreMatrix:
         return home_probs * away_probs * dixon_coles_matrix
 
     @property
+    def n(self):
+        return len(self.matrix)
+    
+    @property
     def _home_win(self, home_handicap_offset = 0):
         return float(np.sum(np.tril(self.matrix, -1 + home_handicap_offset)))
 

@@ -35,6 +35,17 @@ class ModelTest(unittest.TestCase):
                                 if score == target]) / n_paths
                 self.assertTrue(abs(sim_prob - matrix.matrix[i][j]) < 0.01)
 
+    def test_ratings_solver(self):
+        from model.solver import RatingsSolver
+        event = {"name": "A vs B",
+                 "match_odds": {"prices": [2, 3, 5]}}
+        team_names = ["A", "B"]
+        solver_resp = RatingsSolver().solve(events = [event],
+                                            team_names = team_names,
+                                            max_iterations = 250)
+        error = solver_resp["error"]
+        self.assertTrue(error < 0.05)
+                
     def test_sim_points_position_probabilities(self):
         from model.simulator import SimPoints
         sim_points = SimPoints(league_table = [{"name": name,
