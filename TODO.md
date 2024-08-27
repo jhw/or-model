@@ -1,13 +1,18 @@
 ### short
 
-- move unit tests into modules?
+- fix demo with requirements-dev.txt
+- refactor solver so solving for home_advantage is an option
+- add test for solver with single team
+- test existing asian handicap code
+- add test for asian handicap code
+- add over/under goals code with test
 
 ### medium
 
 ### thoughts
 
+- move unit tests into modules?
 - why is std_training_error so high in many cases?
-
 - why doesn't OU give a better fit?
   - is draw fitting a proxy for OU fit?
 - better AH data?
