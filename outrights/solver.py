@@ -53,10 +53,32 @@ class RatingsSolver:
                   for event, matrix in zip(events, matrices)]
         return np.mean(errors)
 
-    def optimize_ratings_and_bias(self, events, ratings, home_advantage=1.2):
-        team_names = list(ratings.keys())
+    def optimise_ratings(self, events, ratings, home_advantage, max_iterations):
+        team_names = sorted(list(ratings.keys()))
         initial_ratings = [ratings[team_name] for team_name in team_names]
-        initial_params = initial_ratings + [home_advantage]
+        bounds = [(0, 6)] * len(initial_ratings)
+
+        def objective(params):
+            for i, team in enumerate(team_names):
+                ratings[team] = params[i]
+            return self.calc_error(events = events,
+                                   ratings = ratings,
+                                   home_advantage = home_advantage)
+
+        result = minimize(objective,
+                          initial_ratings,
+                          method='L-BFGS-B',
+                          bounds=bounds,
+                          options={'maxiter': max_iterations})
+        for i, team in enumerate(team_names):
+            ratings[team] = result.x[i]
+        home_advantage = result.x[-1]
+        return ratings, home_advantage
+    
+    def optimise_ratings_and_home_advantage(self, events, ratings, max_iterations):
+        team_names = sorted(list(ratings.keys()))
+        initial_ratings = [ratings[team_name] for team_name in team_names]
+        initial_params = initial_ratings + [1.25]
         bounds = [(0, 6)] * len(initial_ratings) + [(1, 1.5)]
 
         def objective(params):
@@ -71,22 +93,31 @@ class RatingsSolver:
                           initial_params,
                           method='L-BFGS-B',
                           bounds=bounds,
-                          options={'maxiter': 100})
+                          options={'maxiter': max_iterations})
         for i, team in enumerate(team_names):
             ratings[team] = result.x[i]
         home_advantage = result.x[-1]
         return ratings, home_advantage
 
-    def solve(self, team_names, events):
-        ratings = Ratings(team_names)
-        ratings, home_advantage = self.optimize_ratings_and_bias(events = events,
-                                                                 ratings = ratings)
-        err = self.calc_error(events = events,
-                              ratings = ratings,
-                              home_advantage = home_advantage)
+    def solve(self, team_names, events,
+              home_advantage = None,
+              max_iterations = 100):
+        initial_ratings = Ratings(team_names)
+        if home_advantage:
+            ratings = self.optimise_ratings(events = events,
+                                            ratings = initial_ratings,
+                                            home_advantage = home_advantage,
+                                            max_iterations = max_iterations)
+        else:
+            ratings, home_advantage = self.optimise_ratings_and_home_advantage(events = events,
+                                                                               ratings = initial_ratings,
+                                                                               max_iterations = max_iterations)
+        error = self.calc_error(events = events,
+                                ratings = ratings,
+                                home_advantage = home_advantage)
         return {"ratings": {k: float(v) for k, v in ratings.items()},
                 "home_advantage": float(home_advantage),
-                "error": float(err)}
+                "error": float(error)}
 
 if __name__=="__main__":
     pass

@@ -1,11 +1,12 @@
 ### short
 
-- fix demo with requirements-dev.txt
-- refactor solver so solving for home_advantage is an option
-- add test for solver with single team
-- test existing asian handicap code
-- add test for asian handicap code
-- add over/under goals code with test
+- test solver with and without home_advantage specified
+
+- remove specification of training_data as match_odds
+- rename outrights as model
+
+- asian handicaps
+- over/under goals
 
 ### medium
 
