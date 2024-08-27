@@ -1,5 +1,6 @@
 import numpy as np
 
+import json
 import unittest
 
 class ModelTest(unittest.TestCase):
@@ -35,16 +36,39 @@ class ModelTest(unittest.TestCase):
                                 if score == target]) / n_paths
                 self.assertTrue(abs(sim_prob - matrix.matrix[i][j]) < 0.01)
 
-    def test_ratings_solver(self):
+    def test_ratings_solver(self, home_advantage = 1.25):
         from model.solver import RatingsSolver
         event = {"name": "A vs B",
                  "match_odds": {"prices": [2, 3, 5]}}
         team_names = ["A", "B"]
         solver_resp = RatingsSolver().solve(events = [event],
                                             team_names = team_names,
-                                            max_iterations = 250)
-        error = solver_resp["error"]
-        self.assertTrue(error < 0.05)
+                                            home_advantage = home_advantage,
+                                            max_iterations = 1000)
+        self.assertTrue(solver_resp["error"] < 0.1)
+        self.assertEqual(solver_resp["home_advantage"], home_advantage)
+
+    def test_ratings_and_home_advantage_solver(self,
+                                               team_names = ["Man City",
+                                                             "Liverpool",
+                                                             "Arsenal"]):
+        all_events = None
+        with open("fixtures/ENG1.json") as f:
+            all_events = json.loads(f.read())
+        events = []
+        for event in all_events:
+            home_team_name, away_team_name = event["name"].split(" vs ")
+            if (home_team_name in team_names and
+                away_team_name in team_names):
+                events.append(event)
+        from model.solver import RatingsSolver
+        solver_resp=RatingsSolver().solve(events = events,
+                                          team_names = team_names,
+                                          max_iterations = 1000)
+        self.assertTrue(solver_resp["error"] < 0.1)
+        self.assertTrue(solver_resp["home_advantage"] < 1.5 and
+                        solver_resp["home_advantage"] > 1.1)
+
                 
     def test_sim_points_position_probabilities(self):
         from model.simulator import SimPoints

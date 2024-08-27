@@ -69,8 +69,7 @@ class RatingsSolver:
                           options={'maxiter': max_iterations})
         for i, team in enumerate(team_names):
             ratings[team] = result.x[i]
-        home_advantage = result.x[-1]
-        return ratings, home_advantage
+        return ratings
     
     def optimise_ratings_and_home_advantage(self, events, ratings, max_iterations):
         team_names = sorted(list(ratings.keys()))

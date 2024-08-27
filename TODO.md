@@ -1,6 +1,6 @@
 ### short
 
-- test for ratings home advantage solver, using mini- league
+- stop returning ratings
 - wrap home_advantage in a class
 - clean up ratings/initial ratings
 - pass selector_fn to solver
@@ -31,6 +31,7 @@
 
 ### done
 
+- test for ratings home advantage solver, using mini- league
 - dump ENG1 from fd parser
 - ensure scores and prices are included
 - ensure format is as solver wants it (match_odds -> prices)
