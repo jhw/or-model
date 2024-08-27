@@ -36,7 +36,7 @@ class ModelTest(unittest.TestCase):
                                 if score == target]) / n_paths
                 self.assertTrue(abs(sim_prob - matrix.matrix[i][j]) < 0.01)
 
-    def test_ratings_solver(self, home_advantage = 1.25):
+    def test_ratings_solver_only(self, home_advantage = 1.25):
         from model.solver import RatingsSolver
         event = {"name": "A vs B",
                  "match_odds": {"prices": [2, 3, 5]}}
