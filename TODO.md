@@ -1,8 +1,5 @@
 ### short
 
-- dump ENG1 from fd parser
-- ensure scores and prices are included
-- ensure format is as solver wants it (match_odds -> prices)
 - test for ratings home advantage solver, using mini- league
 - wrap home_advantage in a class
 - clean up ratings/initial ratings
@@ -34,6 +31,9 @@
 
 ### done
 
+- dump ENG1 from fd parser
+- ensure scores and prices are included
+- ensure format is as solver wants it (match_odds -> prices)
 - rename outrights as model
 - rename api as main
 - remove specification of training_data as match_odds
