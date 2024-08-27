@@ -32,6 +32,9 @@ class Event(dict):
 
 def init_ratings(fn, rating_range = RatingRange):
     def wrapped(self, *args, **kwargs):
+        if ("ratings" not in kwargs and
+            "team_names" not in kwargs):
+            raise RuntimeError("please specify either ratings or team_names")
         if "team_names" in kwargs:
             kwargs["ratings"] = {team_name: random.uniform(*rating_range)
                                  for team_name in kwargs.pop("team_names")}
@@ -109,6 +112,10 @@ class RatingsSolver:
         home_advantage = result.x[-1]        
         return ratings, home_advantage
 
+    """
+    Pass initial guess ratings to solver or have it randomise them based on team names if guesses not available
+    """
+    
     def solve(self, events,
               team_names = None,
               ratings = None,
