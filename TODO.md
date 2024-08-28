@@ -1,7 +1,5 @@
 ### short
 
-- test effect on optimisation time of using ratings arg not (randomised) team names
-
 ### medium
 
 - asian handicaps
@@ -24,6 +22,7 @@
 
 ### done
 
+- test effect on optimisation time of using ratings arg not (randomised) team names
 - add demo to main 
 - split tests into separate packages
 - allow solver to be populated with team names or ratings but not both

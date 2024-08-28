@@ -32,10 +32,13 @@ class Event(dict):
 
 def init_ratings(fn, rating_range = RatingRange):
     def wrapped(self, *args, **kwargs):
-        if ("ratings" not in kwargs and
-            "team_names" not in kwargs):
+        if (("ratings" not in kwargs or
+            not kwargs["ratings"]) and
+            ("team_names" not in kwargs or
+             not kwargs["team_names"])):
             raise RuntimeError("please specify either ratings or team_names")
-        if "team_names" in kwargs:
+        if ("team_names" in kwargs and
+            kwargs["team_names"]):
             kwargs["ratings"] = {team_name: random.uniform(*rating_range)
                                  for team_name in kwargs.pop("team_names")}
         return fn(self, *args, **kwargs)
@@ -61,7 +64,8 @@ class RatingsSolver:
 
     @init_ratings
     def optimise_ratings_only(self, events, ratings, home_advantage, max_iterations,
-                              rating_range = RatingRange):
+                              rating_range = RatingRange,
+                              **kwargs):
         team_names = sorted(list(ratings.keys()))
         
         optimiser_ratings = [ratings[team_name] for team_name in team_names]
@@ -86,7 +90,8 @@ class RatingsSolver:
     @init_ratings
     def optimise_ratings_and_bias(self, events, ratings, max_iterations,
                                   rating_range = RatingRange,
-                                  bias_range = HomeAdvantageRange):
+                                  bias_range = HomeAdvantageRange,
+                                  **kwargs):
         team_names = sorted(list(ratings.keys()))
 
         optimiser_ratings = [ratings[team_name] for team_name in team_names]
