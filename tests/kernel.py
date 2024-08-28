@@ -32,6 +32,14 @@ class KernelTest(unittest.TestCase):
             self.assertTrue(abs(sum(self.matrix._asian_handicaps(line)) - 1) < 0.01)
         self.assertTrue(self.matrix._home_asian_handicap(0.5) > self.matrix._home_asian_handicap(-0.5))
 
+    def test_asian_handicap_lines(self):
+        lines = self.matrix.asian_handicap_lines
+        self.assertEqual(abs(lines[0][0]), abs(lines[-1][0]))
+
+    def test_asian_handicap_atm(self):
+        line, asian_handicaps = self.matrix.asian_handicap_atm
+        self.assertEqual(line, -0.5)
+        
     def test_normalisation(self):
         self.assertAlmostEqual(sum(self.matrix.match_odds), 1)
         self.assertAlmostEqual(sum(self.matrix.asian_handicaps(-0.5)), 1)

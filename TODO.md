@@ -1,7 +1,5 @@
 ### short
 
-- asian_handicap_lines
-
 ### medium
 
 - over/under goals
@@ -23,6 +21,7 @@
 
 ### done
 
+- asian_handicap_lines
 - asian handicaps
 - test effect on optimisation time of using ratings arg not (randomised) team names
 - add demo to main 

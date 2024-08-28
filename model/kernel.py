@@ -61,6 +61,10 @@ class ScoreMatrix:
     def _match_odds(self):
         return [self._home_win, self._draw, self._away_win]
 
+    """
+    AH implementation currently only handles half lines
+    """
+    
     def _home_asian_handicap(self, line):
         return float(np.sum(np.tril(self.matrix, - (1 - math.ceil(line)))))
 
@@ -86,7 +90,19 @@ class ScoreMatrix:
     @normalise
     def asian_handicaps(self, line):
         return self._asian_handicaps(line)
-    
+
+    @property
+    def asian_handicap_lines(self):
+        lines = [i - math.ceil(self.n/2) + 0.5
+                 for i in range(self.n + 1)]
+        return [(line, self.asian_handicaps(line))
+                for line in lines]
+
+    @property
+    def asian_handicap_atm(self):
+        return list(reversed(sorted(self.asian_handicap_lines,
+                                    key = lambda x: abs(x[1][0] - x[1][1]))))[-1]
+
     @property
     def expected_home_points(self):
         match_odds = self.match_odds
