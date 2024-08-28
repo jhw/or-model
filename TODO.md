@@ -1,8 +1,9 @@
 ### short
 
+- asian handicaps
+
 ### medium
 
-- asian handicaps
 - over/under goals
 
 ### thoughts
