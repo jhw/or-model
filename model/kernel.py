@@ -1,6 +1,8 @@
 from scipy.special import factorial
 import numpy as np
 
+import math
+
 def poisson_prob(lmbda, k):
     return (lmbda ** k) * np.exp(-lmbda) / factorial(k)
 
@@ -55,9 +57,23 @@ class ScoreMatrix:
     def _away_win(self):
         return float(np.sum(np.triu(self.matrix, 1)))
 
+    @property
+    def _match_odds(self):
+        return [self._home_win, self._draw, self._away_win]
+
+    def _home_asian_handicap(self, line):
+        return float(np.sum(np.tril(self.matrix, - (1 - math.ceil(line)))))
+
+    def _away_asian_handicap(self, line):
+        return float(np.sum(np.triu(self.matrix, 1 - math.ceil(line))))
+
+    def _asian_handicaps(self, line):
+        return [self._home_asian_handicap(line),
+                self._away_asian_handicap(-line)] # NB -line for away
+       
     def normalise(fn):
-        def wrapped(self):
-            probabilities = fn(self)
+        def wrapped(self, *args, **kwargs):
+            probabilities = fn(self, *args, **kwargs)
             overround = sum(probabilities)
             return [prob/overround for prob in probabilities]
         return wrapped
@@ -65,8 +81,12 @@ class ScoreMatrix:
     @property
     @normalise
     def match_odds(self):
-        return [self._home_win, self._draw, self._away_win]
+        return self._match_odds
 
+    @normalise
+    def asian_handicaps(self, line):
+        return self._asian_handicaps(line)
+    
     @property
     def expected_home_points(self):
         match_odds = self.match_odds

@@ -1,6 +1,6 @@
 ### short
 
-- asian handicaps
+- asian_handicap_lines
 
 ### medium
 
@@ -23,6 +23,7 @@
 
 ### done
 
+- asian handicaps
 - test effect on optimisation time of using ratings arg not (randomised) team names
 - add demo to main 
 - split tests into separate packages
