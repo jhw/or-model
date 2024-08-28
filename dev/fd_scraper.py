@@ -41,7 +41,8 @@ def filter_events(reader):
                 return  prices
         raise RuntimeErorr("no prices found for %s" % item)
     def filter_score(item):
-        return [item["FTHG"], item["FTAG"]]
+        return [int(item["FTHG"]),
+                int(item["FTAG"])]
     titles = next(reader)
     rows = [{title: clean_text(value)
              for title, value in zip(titles, row)}
