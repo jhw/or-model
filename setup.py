@@ -58,7 +58,7 @@ def filter_packages(root):
     
 setuptools.setup(
     name="or-model",
-    version="0.2.0",
+    version="0.2.1",
     author="jhw",
     author_email="justin.worrall@gmail.com",
     description="An outrights model",
@@ -71,7 +71,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     # packages=setuptools.find_packages(),
-    packages=filter_packages("outrights"),
+    packages=filter_packages("model"),
     install_requires=requirements,
     # - https://stackoverflow.com/a/57932258/124179
     setup_requires=['setuptools_scm'],
