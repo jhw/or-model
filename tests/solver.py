@@ -26,21 +26,9 @@ class SolverTest(unittest.TestCase):
         self.assertAlmostEqual(event.expected_home_points, 1.8)
         self.assertAlmostEqual(event.expected_away_points, 0.9)
     
-    def test_ratings(self, home_advantage_range = HomeAdvantageRange):
-        event = {"name": "A vs B",
-                 "match_odds": {"prices": [2, 3, 5]}}
-        team_names = ["A", "B"]
-        home_advantage = sum(home_advantage_range) / 2
-        solver_resp = RatingsSolver().solve(events = [event],
-                                            team_names = team_names,
-                                            home_advantage = home_advantage,
-                                            max_iterations = 1000)
-        self.assertTrue(solver_resp["error"] < 0.1)
-        self.assertEqual(solver_resp["home_advantage"], home_advantage)
-
-    def test_ratings_2(self,
-                       rating_range = RatingRange,
-                       home_advantage_range = HomeAdvantageRange):
+    def test_ratings(self,
+                     rating_range = RatingRange,
+                     home_advantage_range = HomeAdvantageRange):
         event = {"name": "A vs B",
                  "match_odds": {"prices": [2, 3, 5]}}
         ratings = {team_name: random.uniform(*rating_range)
@@ -53,14 +41,16 @@ class SolverTest(unittest.TestCase):
         self.assertTrue(solver_resp["error"] < 0.1)
         self.assertEqual(solver_resp["home_advantage"], home_advantage)
 
-        
     def test_ratings_and_bias(self,
                               team_names = ["Man City",
                                             "Liverpool",
-                                            "Arsenal"]):
+                                            "Arsenal"],
+                              rating_range = RatingRange):
         events = self.filter_events(team_names)
+        ratings = {team_name: random.uniform(*rating_range)
+                   for team_name in team_names}
         solver_resp = RatingsSolver().solve(events = events,
-                                            team_names = team_names,
+                                            ratings = ratings,
                                             max_iterations = 1000)
         self.assertTrue(solver_resp["error"] < 0.1)
         initial_bias = sum(HomeAdvantageRange) / 2

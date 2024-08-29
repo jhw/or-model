@@ -73,17 +73,18 @@ def calc_marks(position_probabilities, markets):
             marks.append(mark)
     return marks
 
-def simulate(team_names, training_set, n_paths,
+def simulate(ratings, training_set, n_paths,
              results=[],
              markets=[],
              rounds=1):
+    team_names = sorted(list(ratings.keys()))
     init_markets(team_names, markets)
     league_table = calc_league_table(team_names = team_names,
                                      results = results)
     remaining_fixtures = calc_remaining_fixtures(team_names = team_names,
                                                  results = results,
                                                  rounds = rounds)
-    solver_resp = RatingsSolver().solve(team_names = team_names,
+    solver_resp = RatingsSolver().solve(ratings = ratings,
                                         events = training_set)
     poisson_ratings = solver_resp["ratings"]
     home_advantage = solver_resp["home_advantage"]

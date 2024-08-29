@@ -1,7 +1,6 @@
 from model.kernel import ScoreMatrix
 from scipy.optimize import minimize
 import numpy as np
-import random
 
 RatingRange = (0, 6)
 HomeAdvantageRange = (1, 1.5)
@@ -30,20 +29,6 @@ class Event(dict):
         match_odds = self.match_odds
         return 3 * match_odds[2] + match_odds[1]
 
-def init_ratings(fn, rating_range = RatingRange):
-    def wrapped(self, *args, **kwargs):
-        if (("ratings" not in kwargs or
-            not kwargs["ratings"]) and
-            ("team_names" not in kwargs or
-             not kwargs["team_names"])):
-            raise RuntimeError("please specify either ratings or team_names")
-        if ("team_names" in kwargs and
-            kwargs["team_names"]):
-            kwargs["ratings"] = {team_name: random.uniform(*rating_range)
-                                 for team_name in kwargs.pop("team_names")}
-        return fn(self, *args, **kwargs)
-    return wrapped
-            
 class RatingsSolver:
 
     def __init__(self, selector_fn = lambda x: getattr(x, "match_odds")):
@@ -62,10 +47,8 @@ class RatingsSolver:
                   for event, matrix in zip(events, matrices)]
         return np.mean(errors)
 
-    @init_ratings
-    def optimise_ratings_only(self, events, ratings, home_advantage, max_iterations,
-                              rating_range = RatingRange,
-                              **kwargs):
+    def optimise_ratings(self, events, ratings, home_advantage, max_iterations,
+                         rating_range = RatingRange):
         team_names = sorted(list(ratings.keys()))
         
         optimiser_ratings = [ratings[team_name] for team_name in team_names]
@@ -85,13 +68,10 @@ class RatingsSolver:
                           options = {'maxiter': max_iterations})
         for i, team in enumerate(team_names):
             ratings[team] = result.x[i]
-        return ratings
 
-    @init_ratings
     def optimise_ratings_and_bias(self, events, ratings, max_iterations,
                                   rating_range = RatingRange,
-                                  bias_range = HomeAdvantageRange,
-                                  **kwargs):
+                                  bias_range = HomeAdvantageRange):
         team_names = sorted(list(ratings.keys()))
 
         optimiser_ratings = [ratings[team_name] for team_name in team_names]
@@ -114,29 +94,20 @@ class RatingsSolver:
                           options = {'maxiter': max_iterations})
         for i, team in enumerate(team_names):
             ratings[team] = result.x[i]
-        home_advantage = result.x[-1]        
-        return ratings, home_advantage
+        return result.x[-1]        
 
-    """
-    Pass initial guess ratings to solver or have it randomise them based on team names if guesses not available
-    """
-    
-    def solve(self, events,
-              team_names = None,
-              ratings = None,
+    def solve(self, events, ratings,
               home_advantage = None,
               max_iterations = 100):
         if home_advantage:
-            ratings = self.optimise_ratings_only(events = events,
-                                                 team_names = team_names,
-                                                 ratings = ratings,
-                                                 home_advantage = home_advantage,
-                                                 max_iterations = max_iterations)
+            self.optimise_ratings(events = events,
+                                  ratings = ratings,
+                                  home_advantage = home_advantage,
+                                  max_iterations = max_iterations)
         else:
-            ratings, home_advantage = self.optimise_ratings_and_bias(events = events,
-                                                                     team_names = team_names,
-                                                                     ratings = ratings,
-                                                                     max_iterations = max_iterations)
+            home_advantage = self.optimise_ratings_and_bias(events = events,
+                                                            ratings = ratings,
+                                                            max_iterations = max_iterations)
         error = self.calc_error(events = events,
                                 ratings = ratings,
                                 home_advantage = home_advantage)

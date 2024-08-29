@@ -1,6 +1,8 @@
+from model.solver import RatingRange
 from model.main import simulate
 
 import json
+import random
 
 def filter_team_names(events):
     team_names = set()
@@ -12,13 +14,15 @@ def filter_team_names(events):
 if __name__ == "__main__":
     events = json.loads(open("fixtures/ENG1.json").read())
     team_names = filter_team_names(events)
+    ratings = {team_name: random.uniform(*RatingRange)
+               for team_name in team_names}
     results = [event for event in events
                if event["date"] < "2024-01-01"]
     training_set = sorted(results,
                           key = lambda x: x["date"])[-60:]
     markets = [{"name": "Winner",
                 "payoff": "1|19x0"}]
-    print (simulate(team_names = team_names,
+    print (simulate(ratings = ratings,
                     training_set = training_set,
                     results = results,
                     markets = markets,

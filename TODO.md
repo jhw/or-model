@@ -1,9 +1,7 @@
 ### short
 
-- remove team_names solver options
-  - adjust main
-  - check demo still works
-  
+- expose max_iterations to main
+
 ### medium
 
 - refactor AH atm code to solve for line
@@ -27,6 +25,9 @@
 
 ### done
 
+- remove team_names solver options
+  - adjust main
+  - check demo still works
 - asian_handicap_lines
 - asian handicaps
 - test effect on optimisation time of using ratings arg not (randomised) team names
