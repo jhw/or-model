@@ -1,6 +1,12 @@
 ### short
 
+- remove team_names solver options
+  - adjust main
+  - check demo still works
+  
 ### medium
+
+- refactor AH atm code to solve for line
 
 - over/under goals
 
