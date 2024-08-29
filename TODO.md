@@ -1,7 +1,5 @@
 ### short
 
-- expose max_iterations to main
-
 ### medium
 
 - refactor AH atm code to solve for line
@@ -25,6 +23,7 @@
 
 ### done
 
+- expose max_iterations to main
 - remove team_names solver options
   - adjust main
   - check demo still works

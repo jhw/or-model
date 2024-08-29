@@ -73,7 +73,7 @@ def calc_marks(position_probabilities, markets):
             marks.append(mark)
     return marks
 
-def simulate(ratings, training_set, n_paths,
+def simulate(ratings, training_set, max_iterations, n_paths,
              results=[],
              markets=[],
              rounds=1):
@@ -85,7 +85,8 @@ def simulate(ratings, training_set, n_paths,
                                                  results = results,
                                                  rounds = rounds)
     solver_resp = RatingsSolver().solve(ratings = ratings,
-                                        events = training_set)
+                                        events = training_set,
+                                        max_iterations = max_iterations)
     poisson_ratings = solver_resp["ratings"]
     home_advantage = solver_resp["home_advantage"]
     solver_error = solver_resp["error"]

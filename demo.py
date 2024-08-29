@@ -26,4 +26,5 @@ if __name__ == "__main__":
                     training_set = training_set,
                     results = results,
                     markets = markets,
+                    max_iterations = 100,
                     n_paths = 1000))
