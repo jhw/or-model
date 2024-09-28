@@ -1,11 +1,10 @@
 ### short
 
-- improve OU goals stuff
+- simplify AH code
 - AH to interpolate between lines
+- ensure API can solve for AH line
 
 ### medium
-
-- ensure API can solve for AH line
 
 - proper handling of AH quarter/three-quarter lines
 
@@ -28,6 +27,7 @@
 
 ### done
 
+- improve OU goals stuff
 - add OU goals support
 - add lint 
 - is simulate_points correctly named?
