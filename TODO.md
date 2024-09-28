@@ -1,6 +1,9 @@
 ### short
 
 - AH line solver
+  - take the old asian_handicap_lines function
+  - switch x, y axes
+  - interpolate x value for y = 0.5
 
 ### medium
 
