@@ -1,13 +1,13 @@
 ### short
 
 - add OU goals support
-- add lint 
-- add AH interpolation
+- AH to interpolate between lines
 
 ### medium
 
+- ensure API can solve for AH line
+
 - proper handling of AH quarter/three-quarter lines
-- refactor AH atm code to solve for line
 
 ### thoughts
 
@@ -28,6 +28,7 @@
 
 ### done
 
+- add lint 
 - is simulate_points correctly named?
 - remove AH atm stuff
 - add default options for max_iterations and n_paths
