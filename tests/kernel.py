@@ -44,6 +44,14 @@ class KernelTest(unittest.TestCase):
             self.assertTrue(abs(sum(asian_handicaps) - 1) < 0.01)
             self.assertTrue(abs(sum(self.matrix._asian_handicaps(line)) - 1) < 0.01)
         self.assertTrue(self.matrix._home_asian_handicap(0.5) > self.matrix._home_asian_handicap(-0.5))
-                                
+
+    def test_over_under_goals(self):
+        for line in [0.5, 1.5, 2.5, 3.5, 4.5]:
+            over_under = self.matrix.over_under_goals(line)
+            self.assertTrue(abs(sum(over_under) - 1) < 0.01)
+            self.assertTrue(abs(sum(self.matrix._over_under_goals(line)) - 1) < 0.01)
+        self.assertTrue(self.matrix._under_goals(1.5) < self.matrix._under_goals(2.5))
+
+        
 if __name__ == "__main__":
     unittest.main()

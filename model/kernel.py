@@ -104,13 +104,17 @@ class ScoreMatrix:
     ### over/under goals
 
     def _under_goals(self, line):
-        return float(np.sum(np.tril(self.matrix, math.floor(line) - 1).T))
+        i, j = np.indices(self.matrix.shape)
+        mask = (i + j) <= line
+        return np.sum(self.matrix[mask])
 
     def _over_goals(self, line):
-        return float(np.sum(np.triu(self.matrix, math.ceil(line)).T))
+        i, j = np.indices(self.matrix.shape)
+        mask = (i + j) > line
+        return np.sum(self.matrix[mask])
 
     def _over_under_goals(self, line):
-        return [self._under_goals(line), self._over_goals(line)]
+        return [self._over_goals(line), self._under_goals(line)]
 
     @normalise
     def over_under_goals(self, line):

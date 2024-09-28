@@ -1,6 +1,6 @@
 ### short
 
-- add OU goals support
+- improve OU goals stuff
 - AH to interpolate between lines
 
 ### medium
@@ -28,6 +28,7 @@
 
 ### done
 
+- add OU goals support
 - add lint 
 - is simulate_points correctly named?
 - remove AH atm stuff
