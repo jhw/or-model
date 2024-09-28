@@ -1,4 +1,3 @@
-from model.utils import linear_interpolate
 from scipy.special import factorial
 
 import math
@@ -19,6 +18,17 @@ def dixon_coles_adjustment(i, j, rho):
     else:
         return 1
 
+def linear_interpolate(xy_coords, x):
+    if x < xy_coords[0][0] or x > xy_coords[-1][0]:
+        raise RuntimeError("the x value is out of the interpolation range")
+    for i in range(len(xy_coords) - 1):
+        x0, y0 = xy_coords[i]
+        x1, y1 = xy_coords[i + 1]        
+        if x0 <= x <= x1:
+            y = y0 + (y1 - y0) * (x - x0) / (x1 - x0)
+            return y
+    raise RuntimeError("interpolation failed due to unexpected input")
+    
 class ScoreMatrix:
 
     @classmethod
@@ -107,15 +117,19 @@ class ScoreMatrix:
         mask = (i + line - j) < 0
         return float(np.sum(self.matrix[mask]))
 
+    def handicap_half_line(fn):
+        def wrapped(self, handicap_fn, line):            
+            return handicap_fn(line) if (line - 0.5).is_integer() else fn(self, handicap_fn, line)
+        return wrapped
+    
+    @handicap_half_line
     def _interpolate_handicap(self, handicap_fn, line):
-        lower_half_line = math.floor(line) + 0.5
-        upper_half_line = math.ceil(line) - 0.5
-        if lower_half_line == upper_half_line:
-            return handicap_fn(line)        
-        lower_prob = handicap_fn(lower_half_line)
-        upper_prob = handicap_fn(upper_half_line)
-        interpolated_prob = linear_interpolate([(lower_half_line, lower_prob), (upper_half_line, upper_prob)], line)
-        return interpolated_prob
+        lower_line = round(line) - 0.5
+        upper_line = lower_line + 1
+        lower_prob = handicap_fn(lower_line)
+        upper_prob = handicap_fn(upper_line)
+        return linear_interpolate([(lower_line, lower_prob),
+                                   (upper_line, upper_prob)], line)
     
     def _home_handicap(self, line):
         return self._interpolate_handicap(handicap_fn = self.__home_handicap,

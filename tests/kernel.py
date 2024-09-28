@@ -33,17 +33,27 @@ class KernelTest(unittest.TestCase):
         self.assertTrue(abs(sum(match_odds) - 1) < 0.01)
         self.assertTrue(abs(sum(self.matrix._match_odds) - 1) < 0.01)
  
-    def test_asian_handicaps(self):
-        self.assertTrue(self.matrix._home_handicap(0.5) > self.matrix._home_handicap(-0.5))
-        self.assertTrue(self.matrix._away_handicap(0.5) < self.matrix._away_handicap(-0.5))
-        for line in [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5]:
-            self.assertTrue(abs(sum(self.matrix._asian_handicaps(line)) - 1) < 0.01)
+    def test_asian_handicaps(self, lines = [0.25 * (i - 10) for i in range(21)]):
+        self.assertTrue(self.matrix._home_handicap(0.25) > self.matrix._home_handicap(-0.25))
+        self.assertTrue(self.matrix._away_handicap(0.25) < self.matrix._away_handicap(-0.25))
+        price_table = [self.matrix._asian_handicaps(line) for line in lines]
+        for line_prices in price_table:
+            self.assertTrue(abs(sum(line_prices) - 1) < 0.01)
+        home_prices = [line_prices[0] for line_prices in price_table]
+        self.assertEqual(home_prices, sorted(home_prices))
+        away_prices = [line_prices[1] for line_prices in price_table]
+        self.assertEqual(away_prices, list(reversed(sorted(away_prices))))
 
-    def test_over_under_goals(self):
+    def test_over_under_goals(self, lines = [i + 0.5 for i in range(10)]):
         self.assertTrue(self.matrix._over_goals(0.5) > self.matrix._over_goals(1.5))
         self.assertTrue(self.matrix._under_goals(0.5) < self.matrix._under_goals(1.5))
-        for line in [0.5, 1.5, 2.5, 3.5, 4.5]:
-            self.assertTrue(abs(sum(self.matrix._over_under_goals(line)) - 1) < 0.01)
+        price_table = [self.matrix._over_under_goals(line) for line in lines]
+        for line_prices in price_table:
+            self.assertTrue(abs(sum(line_prices) - 1) < 0.01)
+        over_prices = [line_prices[0] for line_prices in price_table]
+        self.assertEqual(over_prices, list(reversed(sorted(over_prices))))
+        under_prices = [line_prices[1] for line_prices in price_table]
+        self.assertEqual(under_prices, sorted(under_prices))
 
     def test_normalisation(self):
         self.assertAlmostEqual(sum(self.matrix.match_odds), 1)

@@ -1,8 +1,6 @@
 ### short
 
-- quarter line requests are failing
-- test for AH interpolation
-- AH line solve
+- AH line solver
 
 ### medium
 
@@ -27,6 +25,10 @@
 
 ### done
 
+- explicit test for AH price ordering
+- refactor AH, OU tests
+- test for AH interpolation
+- quarter line requests are failing
 - AH interpolation
 - reject integer line decorator
 - AH code to use mask
