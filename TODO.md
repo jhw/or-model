@@ -1,10 +1,15 @@
 ### short
 
+- add outrights positions option
+- remove AH atm stuff
+- add OU goals support
+- add lint 
+- add AH interpolation
+
 ### medium
 
+- proper handling of AH quarter/three-quarter lines
 - refactor AH atm code to solve for line
-
-- over/under goals
 
 ### thoughts
 
