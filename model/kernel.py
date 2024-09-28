@@ -54,6 +54,15 @@ class ScoreMatrix:
     @property
     def n(self):
         return len(self.matrix)
+
+    def normalise(fn):
+        def wrapped(self, *args, **kwargs):
+            probabilities = fn(self, *args, **kwargs)
+            overround = sum(probabilities)
+            return [prob/overround for prob in probabilities]
+        return wrapped
+
+        ### match odds
     
     @property
     def _home_win(self):
@@ -71,9 +80,12 @@ class ScoreMatrix:
     def _match_odds(self):
         return [self._home_win, self._draw, self._away_win]
 
-    """
-    AH implementation currently only handles half lines
-    """
+    @property
+    @normalise
+    def match_odds(self):
+        return self._match_odds
+    
+    ### asian handicap
     
     def _home_asian_handicap(self, line):
         return float(np.sum(np.tril(self.matrix, - (1 - math.ceil(line)))))
@@ -84,23 +96,28 @@ class ScoreMatrix:
     def _asian_handicaps(self, line):
         return [self._home_asian_handicap(line),
                 self._away_asian_handicap(-line)] # NB -line for away
-       
-    def normalise(fn):
-        def wrapped(self, *args, **kwargs):
-            probabilities = fn(self, *args, **kwargs)
-            overround = sum(probabilities)
-            return [prob/overround for prob in probabilities]
-        return wrapped
-
-    @property
-    @normalise
-    def match_odds(self):
-        return self._match_odds
 
     @normalise
     def asian_handicaps(self, line):
         return self._asian_handicaps(line)
+    
+    ### over/under goals
 
+    def _under_goals(self, line):
+        return float(np.sum(np.tril(self.matrix, math.floor(line) - 1).T))
+
+    def _over_goals(self, line):
+        return float(np.sum(np.triu(self.matrix, math.ceil(line)).T))
+
+    def _over_under_goals(self, line):
+        return [self._under_goals(line), self._over_goals(line)]
+
+    @normalise
+    def over_under_goals(self, line):
+        return self._over_under_goals(line)
+
+    ### expected points
+    
     @property
     def expected_home_points(self):
         match_odds = self.match_odds

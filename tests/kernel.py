@@ -25,7 +25,11 @@ class KernelTest(unittest.TestCase):
                 sim_prob = len([score for score in scores
                                 if score == target]) / n_paths
                 self.assertTrue(abs(sim_prob - self.matrix.matrix[i][j]) < 0.01)
-        
+
+    def test_normalisation(self):
+        self.assertAlmostEqual(sum(self.matrix.match_odds), 1)
+        self.assertAlmostEqual(sum(self.matrix.asian_handicaps(-0.5)), 1)
+                
     def test_match_odds(self):
         match_odds = [self.matrix._home_win,
                       self.matrix._draw,
@@ -40,10 +44,6 @@ class KernelTest(unittest.TestCase):
             self.assertTrue(abs(sum(asian_handicaps) - 1) < 0.01)
             self.assertTrue(abs(sum(self.matrix._asian_handicaps(line)) - 1) < 0.01)
         self.assertTrue(self.matrix._home_asian_handicap(0.5) > self.matrix._home_asian_handicap(-0.5))
-
-    def test_normalisation(self):
-        self.assertAlmostEqual(sum(self.matrix.match_odds), 1)
-        self.assertAlmostEqual(sum(self.matrix.asian_handicaps(-0.5)), 1)
                                 
 if __name__ == "__main__":
     unittest.main()
