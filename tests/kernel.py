@@ -25,10 +25,6 @@ class KernelTest(unittest.TestCase):
                 sim_prob = len([score for score in scores
                                 if score == target]) / n_paths
                 self.assertTrue(abs(sim_prob - self.matrix.matrix[i][j]) < 0.01)
-
-    def test_normalisation(self):
-        self.assertAlmostEqual(sum(self.matrix.match_odds), 1)
-        self.assertAlmostEqual(sum(self.matrix.asian_handicaps(-0.5)), 1)
                 
     def test_match_odds(self):
         match_odds = [self.matrix._home_win,
@@ -38,20 +34,21 @@ class KernelTest(unittest.TestCase):
         self.assertTrue(abs(sum(self.matrix._match_odds) - 1) < 0.01)
  
     def test_asian_handicaps(self):
+        self.assertTrue(self.matrix._home_handicap(0.5) > self.matrix._home_handicap(-0.5))
+        self.assertTrue(self.matrix._away_handicap(0.5) < self.matrix._away_handicap(-0.5))
         for line in [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5]:
-            asian_handicaps = [self.matrix._home_asian_handicap(line),
-                               self.matrix._away_asian_handicap(-line)]
-            self.assertTrue(abs(sum(asian_handicaps) - 1) < 0.01)
             self.assertTrue(abs(sum(self.matrix._asian_handicaps(line)) - 1) < 0.01)
-        self.assertTrue(self.matrix._home_asian_handicap(0.5) > self.matrix._home_asian_handicap(-0.5))
 
     def test_over_under_goals(self):
+        self.assertTrue(self.matrix._over_goals(0.5) > self.matrix._over_goals(1.5))
+        self.assertTrue(self.matrix._under_goals(0.5) < self.matrix._under_goals(1.5))
         for line in [0.5, 1.5, 2.5, 3.5, 4.5]:
-            over_under = self.matrix.over_under_goals(line)
-            self.assertTrue(abs(sum(over_under) - 1) < 0.01)
             self.assertTrue(abs(sum(self.matrix._over_under_goals(line)) - 1) < 0.01)
-        self.assertTrue(self.matrix._under_goals(1.5) < self.matrix._under_goals(2.5))
 
+    def test_normalisation(self):
+        self.assertAlmostEqual(sum(self.matrix.match_odds), 1)
+        self.assertAlmostEqual(sum(self.matrix.asian_handicaps(-0.5)), 1)
+        self.assertAlmostEqual(sum(self.matrix.over_under_goals(2.5)), 1)
         
 if __name__ == "__main__":
     unittest.main()

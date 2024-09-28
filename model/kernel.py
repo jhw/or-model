@@ -86,16 +86,20 @@ class ScoreMatrix:
         return self._match_odds
     
     ### asian handicap
-    
-    def _home_asian_handicap(self, line):
-        return float(np.sum(np.tril(self.matrix, - (1 - math.ceil(line)))))
 
-    def _away_asian_handicap(self, line):
-        return float(np.sum(np.triu(self.matrix, 1 - math.ceil(line))))
+    def _home_handicap(self, line):
+        i, j = np.indices(self.matrix.shape)
+        mask = (i + line - j) > 0
+        return np.sum(self.matrix[mask])
+
+    def _away_handicap(self, line):
+        i, j = np.indices(self.matrix.shape)
+        mask = (i + line - j) < 0
+        return np.sum(self.matrix[mask])
 
     def _asian_handicaps(self, line):
-        return [self._home_asian_handicap(line),
-                self._away_asian_handicap(-line)] # NB -line for away
+        return [self._home_handicap(line),
+                self._away_handicap(line)]
 
     @normalise
     def asian_handicaps(self, line):
@@ -103,18 +107,19 @@ class ScoreMatrix:
     
     ### over/under goals
 
-    def _under_goals(self, line):
-        i, j = np.indices(self.matrix.shape)
-        mask = (i + j) <= line
-        return np.sum(self.matrix[mask])
-
     def _over_goals(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + j) > line
         return np.sum(self.matrix[mask])
+    
+    def _under_goals(self, line):
+        i, j = np.indices(self.matrix.shape)
+        mask = (i + j) < line
+        return np.sum(self.matrix[mask])
 
     def _over_under_goals(self, line):
-        return [self._over_goals(line), self._under_goals(line)]
+        return [self._over_goals(line),
+                self._under_goals(line)]
 
     @normalise
     def over_under_goals(self, line):

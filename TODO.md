@@ -1,8 +1,8 @@
 ### short
 
-- simplify AH code
-- AH to interpolate between lines
-- ensure API can solve for AH line
+- reject integer line decorator
+- AH interpolation
+- AH line solve
 
 ### medium
 
@@ -27,6 +27,7 @@
 
 ### done
 
+- AH code to use mask
 - improve OU goals stuff
 - add OU goals support
 - add lint 
