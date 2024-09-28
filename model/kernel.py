@@ -1,7 +1,7 @@
 from scipy.special import factorial
-import numpy as np
 
 import math
+import numpy as np
 
 def poisson_prob(lmbda, k):
     return (lmbda ** k) * np.exp(-lmbda) / factorial(k)
@@ -90,18 +90,6 @@ class ScoreMatrix:
     @normalise
     def asian_handicaps(self, line):
         return self._asian_handicaps(line)
-
-    @property
-    def asian_handicap_lines(self):
-        lines = [i - math.ceil(self.n/2) + 0.5
-                 for i in range(self.n + 1)]
-        return [(line, self.asian_handicaps(line))
-                for line in lines]
-
-    @property
-    def asian_handicap_atm(self):
-        return list(reversed(sorted(self.asian_handicap_lines,
-                                    key = lambda x: abs(x[1][0] - x[1][1]))))[-1]
 
     @property
     def expected_home_points(self):

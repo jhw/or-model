@@ -25,6 +25,5 @@ if __name__ == "__main__":
     print (simulate(ratings = ratings,
                     training_set = training_set,
                     results = results,
-                    markets = markets,
-                    max_iterations = 100,
-                    n_paths = 1000))
+                    markets = markets))
+

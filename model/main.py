@@ -59,7 +59,7 @@ def calc_expected_season_points(team_names, results, remaining_fixtures, ratings
 def sum_product(X, Y):
     return sum([x*y for x, y in zip(X, Y)])
 
-def calc_marks(position_probabilities, markets):
+def calc_outright_marks(position_probabilities, markets):
     marks = []
     for market in markets:
         group_pp_key = market["name"] if ("include" in market or "exclude" in market) else "default"
@@ -73,10 +73,12 @@ def calc_marks(position_probabilities, markets):
             marks.append(mark)
     return marks
 
-def simulate(ratings, training_set, max_iterations, n_paths,
-             results=[],
-             markets=[],
-             rounds=1):
+def simulate(ratings, training_set,
+             max_iterations = 100,
+             n_paths = 1000,
+             results = [],
+             markets = [],
+             rounds = 1):
     team_names = sorted(list(ratings.keys()))
     init_markets(team_names, markets)
     league_table = calc_league_table(team_names = team_names,
@@ -118,10 +120,10 @@ def simulate(ratings, training_set, max_iterations, n_paths,
                      "points_per_game_rating": ppg_ratings[team["name"]],
                      "expected_season_points": season_points[team["name"]],
                      "position_probabilities": position_probs["default"][team["name"]]})
-    marks = calc_marks(position_probabilities = position_probs,
-                       markets = markets)        
+    outright_marks = calc_outright_marks(position_probabilities = position_probs,
+                                         markets = markets)        
     return {"teams": league_table,
-            "marks": marks,
+            "outright_marks": outright_marks,
             "home_advantage": home_advantage,
             "solver_error": solver_error}
 

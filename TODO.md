@@ -1,7 +1,6 @@
 ### short
 
-- add outrights positions option
-- remove AH atm stuff
+- is simulate_points correctly named?
 - add OU goals support
 - add lint 
 - add AH interpolation
@@ -13,6 +12,8 @@
 
 ### thoughts
 
+- add outrights positions option?
+  - doesn't feel like it makes a lot of sense
 - move unit tests into modules?
 - why is std_training_error so high in many cases?
 - why doesn't OU give a better fit?
@@ -28,6 +29,8 @@
 
 ### done
 
+- remove AH atm stuff
+- add default options for max_iterations and n_paths
 - expose max_iterations to main
 - remove team_names solver options
   - adjust main
