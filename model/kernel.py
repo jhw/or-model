@@ -55,10 +55,10 @@ class ScoreMatrix:
                    for j in range(self.matrix.shape[1])]
         return [indexes[i] for i in chosen_indices]
     
-    def reject_integer_line(fn):
+    def enforce_half_line(fn):
         def wrapped(self, line):
-            if line.is_integer():
-                raise RuntimeError(f"line can't be a whole number: {line}")
+            if not (line - 0.5).is_integer():
+                raise RuntimeError(f"line must be a half line: {line}")
             return fn(self, line)
         return wrapped
     
@@ -94,18 +94,24 @@ class ScoreMatrix:
     
     ### asian handicap
 
-    @reject_integer_line
-    def _home_handicap(self, line):
+    @enforce_half_line
+    def __home_handicap(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + line - j) > 0
         return np.sum(self.matrix[mask])
 
-    @reject_integer_line
-    def _away_handicap(self, line):
+    @enforce_half_line
+    def __away_handicap(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + line - j) < 0
         return np.sum(self.matrix[mask])
 
+    def _home_handicap(self, line):
+        return self.__home_handicap(line)
+
+    def _away_handicap(self, line):
+        return self.__away_handicap(line)
+    
     def _asian_handicaps(self, line):
         return [self._home_handicap(line),
                 self._away_handicap(line)]
@@ -116,13 +122,13 @@ class ScoreMatrix:
     
     ### over/under goals
 
-    @reject_integer_line
+    @enforce_half_line
     def _over_goals(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + j) > line
         return np.sum(self.matrix[mask])
 
-    @reject_integer_line
+    @enforce_half_line
     def _under_goals(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + j) < line
