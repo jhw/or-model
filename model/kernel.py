@@ -1,3 +1,4 @@
+from model.utils import linear_interpolate
 from scipy.special import factorial
 
 import math
@@ -98,20 +99,32 @@ class ScoreMatrix:
     def __home_handicap(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + line - j) > 0
-        return np.sum(self.matrix[mask])
+        return float(np.sum(self.matrix[mask]))
 
     @enforce_half_line
     def __away_handicap(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + line - j) < 0
-        return np.sum(self.matrix[mask])
+        return float(np.sum(self.matrix[mask]))
 
+    def _interpolate_handicap(self, handicap_fn, line):
+        lower_half_line = math.floor(line) + 0.5
+        upper_half_line = math.ceil(line) - 0.5
+        if lower_half_line == upper_half_line:
+            return handicap_fn(line)        
+        lower_prob = handicap_fn(lower_half_line)
+        upper_prob = handicap_fn(upper_half_line)
+        interpolated_prob = linear_interpolate([(lower_half_line, lower_prob), (upper_half_line, upper_prob)], line)
+        return interpolated_prob
+    
     def _home_handicap(self, line):
-        return self.__home_handicap(line)
+        return self._interpolate_handicap(handicap_fn = self.__home_handicap,
+                                          line = line)
 
     def _away_handicap(self, line):
-        return self.__away_handicap(line)
-    
+        return self._interpolate_handicap(handicap_fn = self.__away_handicap,
+                                          line = line)
+
     def _asian_handicaps(self, line):
         return [self._home_handicap(line),
                 self._away_handicap(line)]
@@ -126,13 +139,13 @@ class ScoreMatrix:
     def _over_goals(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + j) > line
-        return np.sum(self.matrix[mask])
+        return float(np.sum(self.matrix[mask]))
 
     @enforce_half_line
     def _under_goals(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + j) < line
-        return np.sum(self.matrix[mask])
+        return float(np.sum(self.matrix[mask]))
 
     def _over_under_goals(self, line):
         return [self._over_goals(line),

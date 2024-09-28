@@ -1,6 +1,7 @@
 ### short
 
-- AH interpolation
+- test for AH interpolation
+
 - AH line solve
 
 ### medium
@@ -26,6 +27,7 @@
 
 ### done
 
+- AH interpolation
 - reject integer line decorator
 - AH code to use mask
 - improve OU goals stuff
