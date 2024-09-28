@@ -28,7 +28,7 @@ class SimPoints:
         matrix = ScoreMatrix.initialise(event_name = event_name,
                                         ratings = ratings,
                                         home_advantage = home_advantage)
-        scores = matrix.simulate_points(self.n_paths)
+        scores = matrix.simulate_scores(self.n_paths)
         self.update_event(event_name, scores)
     
     def update_home_team(self, team_name, scores):

@@ -16,6 +16,15 @@ class KernelTest(unittest.TestCase):
 
     def test_dimensionality(self):
         self.assertTrue(np.sum(np.tril(self.matrix.matrix)) > np.sum(np.triu(self.matrix.matrix)))
+
+    def test_simulate_scores(self, n_paths = 10000, n = 5):
+        scores = self.matrix.simulate_scores(n_paths)
+        for i in range(n):
+            for j in range(n):
+                target = (i, j)
+                sim_prob = len([score for score in scores
+                                if score == target]) / n_paths
+                self.assertTrue(abs(sim_prob - self.matrix.matrix[i][j]) < 0.01)
         
     def test_match_odds(self):
         match_odds = [self.matrix._home_win,
@@ -31,20 +40,10 @@ class KernelTest(unittest.TestCase):
             self.assertTrue(abs(sum(asian_handicaps) - 1) < 0.01)
             self.assertTrue(abs(sum(self.matrix._asian_handicaps(line)) - 1) < 0.01)
         self.assertTrue(self.matrix._home_asian_handicap(0.5) > self.matrix._home_asian_handicap(-0.5))
-        
+
     def test_normalisation(self):
         self.assertAlmostEqual(sum(self.matrix.match_odds), 1)
         self.assertAlmostEqual(sum(self.matrix.asian_handicaps(-0.5)), 1)
-            
-    def test_simulation(self, n_paths = 10000, n = 5):
-        scores = self.matrix.simulate_points(n_paths)
-        for i in range(n):
-            for j in range(n):
-                target = (i, j)
-                sim_prob = len([score for score in scores
-                                if score == target]) / n_paths
-                self.assertTrue(abs(sim_prob - self.matrix.matrix[i][j]) < 0.01)
-
-                        
+                                
 if __name__ == "__main__":
     unittest.main()

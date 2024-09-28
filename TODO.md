@@ -1,6 +1,5 @@
 ### short
 
-- is simulate_points correctly named?
 - add OU goals support
 - add lint 
 - add AH interpolation
@@ -29,6 +28,7 @@
 
 ### done
 
+- is simulate_points correctly named?
 - remove AH atm stuff
 - add default options for max_iterations and n_paths
 - expose max_iterations to main

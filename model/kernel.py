@@ -41,6 +41,16 @@ class ScoreMatrix:
         dixon_coles_matrix = np.vectorize(dixon_coles_adjustment)(home_goals[:, np.newaxis], away_goals[np.newaxis, :], self.rho)
         return home_probs * away_probs * dixon_coles_matrix
 
+    def simulate_scores(self, n_paths):
+        flat_matrix = self.matrix.flatten() 
+        chosen_indices = np.random.choice(len(flat_matrix),
+                                          size=n_paths,
+                                          p=flat_matrix / flat_matrix.sum())
+        indexes = [(i, j)
+                   for i in range(self.matrix.shape[0])
+                   for j in range(self.matrix.shape[1])]
+        return [indexes[i] for i in chosen_indices]
+    
     @property
     def n(self):
         return len(self.matrix)
@@ -100,16 +110,6 @@ class ScoreMatrix:
     def expected_away_points(self):
         match_odds = self.match_odds
         return 3 * match_odds[2] + match_odds[1]
-
-    def simulate_points(self, n_paths):
-        flat_matrix = self.matrix.flatten() 
-        chosen_indices = np.random.choice(len(flat_matrix),
-                                          size=n_paths,
-                                          p=flat_matrix / flat_matrix.sum())
-        indexes = [(i, j)
-                   for i in range(self.matrix.shape[0])
-                   for j in range(self.matrix.shape[1])]
-        return [indexes[i] for i in chosen_indices]
 
 if __name__ == "__main__":
     pass
