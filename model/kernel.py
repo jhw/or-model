@@ -41,6 +41,10 @@ class ScoreMatrix:
         dixon_coles_matrix = np.vectorize(dixon_coles_adjustment)(home_goals[:, np.newaxis], away_goals[np.newaxis, :], self.rho)
         return home_probs * away_probs * dixon_coles_matrix
 
+    @property
+    def n(self):
+        return len(self.matrix)
+    
     def simulate_scores(self, n_paths):
         flat_matrix = self.matrix.flatten() 
         chosen_indices = np.random.choice(len(flat_matrix),
@@ -51,10 +55,13 @@ class ScoreMatrix:
                    for j in range(self.matrix.shape[1])]
         return [indexes[i] for i in chosen_indices]
     
-    @property
-    def n(self):
-        return len(self.matrix)
-
+    def reject_integer_line(fn):
+        def wrapped(self, line):
+            if line.is_integer():
+                raise RuntimeError(f"line can't be a whole number: {line}")
+            return fn(self, line)
+        return wrapped
+    
     def normalise(fn):
         def wrapped(self, *args, **kwargs):
             probabilities = fn(self, *args, **kwargs)
@@ -62,7 +69,7 @@ class ScoreMatrix:
             return [prob/overround for prob in probabilities]
         return wrapped
 
-        ### match odds
+    ### match odds
     
     @property
     def _home_win(self):
@@ -87,11 +94,13 @@ class ScoreMatrix:
     
     ### asian handicap
 
+    @reject_integer_line
     def _home_handicap(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + line - j) > 0
         return np.sum(self.matrix[mask])
 
+    @reject_integer_line
     def _away_handicap(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + line - j) < 0
@@ -107,11 +116,13 @@ class ScoreMatrix:
     
     ### over/under goals
 
+    @reject_integer_line
     def _over_goals(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + j) > line
         return np.sum(self.matrix[mask])
-    
+
+    @reject_integer_line
     def _under_goals(self, line):
         i, j = np.indices(self.matrix.shape)
         mask = (i + j) < line

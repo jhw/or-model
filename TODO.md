@@ -1,6 +1,5 @@
 ### short
 
-- reject integer line decorator
 - AH interpolation
 - AH line solve
 
@@ -27,6 +26,7 @@
 
 ### done
 
+- reject integer line decorator
 - AH code to use mask
 - improve OU goals stuff
 - add OU goals support
