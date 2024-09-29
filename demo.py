@@ -22,8 +22,8 @@ if __name__ == "__main__":
                           key = lambda x: x["date"])[-60:]
     markets = [{"name": "Winner",
                 "payoff": "1|19x0"}]
-    print (simulate(ratings = ratings,
+    resp = simulate(ratings = ratings,
                     training_set = training_set,
                     results = results,
-                    markets = markets))
-
+                    markets = markets)
+    print(json.dumps(resp, indent = 2))
