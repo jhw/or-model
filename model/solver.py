@@ -20,7 +20,8 @@ class RatingsSolver:
                                            ratings = ratings,
                                            home_advantage = home_advantage)
                     for event in events]        
-        errors = [self.rms_error(self.model_selector(matrix),
+        errors = [self.rms_error(self.model_selector(event = event,
+                                                     matrix = matrix),
                                  self.market_selector(event))
                   for event, matrix in zip(events, matrices)]
         return np.mean(errors)

@@ -25,7 +25,7 @@ class SolverTest(unittest.TestCase):
         return events
     
     def test_ratings(self,
-                     model_selector = lambda event: event.match_odds,
+                     model_selector = lambda event, matrix: matrix.match_odds,
                      market_selector = lambda event: filter_1x2_probabilities(event),
                      rating_range = RatingRange,
                      home_advantage_range = HomeAdvantageRange):
@@ -47,7 +47,7 @@ class SolverTest(unittest.TestCase):
                               team_names = ["Man City",
                                             "Liverpool",
                                             "Arsenal"],
-                              model_selector = lambda event: event.match_odds,
+                              model_selector = lambda event, matrix: matrix.match_odds,
                               market_selector = lambda event: filter_1x2_probabilities(event),
                               rating_range = RatingRange):
         events = self.filter_events(team_names)

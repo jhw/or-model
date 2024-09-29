@@ -1,6 +1,6 @@
 ### short
 
-- AH + OU selector demo
+- checks for 1x2 vs ah/ou results
 
 ### medium
 
@@ -27,6 +27,7 @@
 
 ### done
 
+- AH + OU selector demo
 - update scraper
 - save fixtures with AH, OU
 - match odds functions to use mask
