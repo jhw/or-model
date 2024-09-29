@@ -1,12 +1,13 @@
 ### short
 
-- match odds functions to use mask
-- kernel calculator properties to use base function taking mask_fn
-- separate out AH, OU tests
+- update scraper
+- save fixtures with AH, OU
 - AH + OU selector demo
 
 ### medium
 
+- separate out AH, OU tests
+- stop solver test failing occasionally
 - proper handling of AH quarter/three-quarter lines
 
 ### thoughts
@@ -28,6 +29,8 @@
 
 ### done
 
+- match odds functions to use mask
+- kernel calculator properties to use base function taking mask_fn
 - simplify Event in main
 - AH line solver
   - take the old asian_handicap_lines function

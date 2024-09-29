@@ -80,19 +80,24 @@ class ScoreMatrix:
             return [prob/overround for prob in probabilities]
         return wrapped
 
+    def probability(self, mask_fn):
+        i, j = np.indices(self.matrix.shape)
+        mask = mask_fn(i, j)
+        return float(np.sum(self.matrix[mask]))
+    
     ### match odds
     
     @property
     def _home_win(self):
-        return float(np.sum(np.tril(self.matrix, -1)))
+        return self.probability(lambda i, j: i > j)
 
     @property
     def _draw(self):
-        return float(np.sum(np.diag(self.matrix)))
+        return self.probability(lambda i, j: i == j)
 
     @property
     def _away_win(self):
-        return float(np.sum(np.triu(self.matrix, 1)))
+        return self.probability(lambda i, j: i < j)
 
     @property
     def _match_odds(self):
@@ -107,15 +112,11 @@ class ScoreMatrix:
 
     @enforce_half_line
     def __home_handicap(self, line):
-        i, j = np.indices(self.matrix.shape)
-        mask = (i + line - j) > 0
-        return float(np.sum(self.matrix[mask]))
+        return self.probability(lambda i, j: (i + line - j) > 0)
 
     @enforce_half_line
     def __away_handicap(self, line):
-        i, j = np.indices(self.matrix.shape)
-        mask = (i + line - j) < 0
-        return float(np.sum(self.matrix[mask]))
+        return self.probability(lambda i, j: (i + line - j) < 0)
 
     def handle_handicap_half_line(fn):
         def wrapped(self, handicap_fn, line):            
@@ -164,15 +165,11 @@ class ScoreMatrix:
 
     @enforce_half_line
     def _over_goals(self, line):
-        i, j = np.indices(self.matrix.shape)
-        mask = (i + j) > line
-        return float(np.sum(self.matrix[mask]))
+        return self.probability(lambda i, j: (i + j) > line)
 
     @enforce_half_line
     def _under_goals(self, line):
-        i, j = np.indices(self.matrix.shape)
-        mask = (i + j) < line
-        return float(np.sum(self.matrix[mask]))
+        return self.probability(lambda i, j: (i + j) < line)
 
     def _over_under_goals(self, line):
         return [self._over_goals(line),
