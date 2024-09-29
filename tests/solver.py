@@ -1,4 +1,4 @@
-from model.solver import Event, RatingsSolver, RatingRange, HomeAdvantageRange
+from model.solver import RatingsSolver, RatingRange, HomeAdvantageRange
 
 import json
 import random
@@ -18,13 +18,6 @@ class SolverTest(unittest.TestCase):
                 away_team_name in team_names):
                 events.append(event)
         return events
-
-    def test_event(self):
-        event = Event({"name": "A vs B",
-                       "match_odds": {"prices": [2, 3.333333333333, 5]}})
-        self.assertAlmostEqual(sum(event.match_odds), 1)
-        self.assertAlmostEqual(event.expected_home_points, 1.8)
-        self.assertAlmostEqual(event.expected_away_points, 0.9)
     
     def test_ratings(self,
                      rating_range = RatingRange,

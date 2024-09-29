@@ -1,17 +1,33 @@
 from model.kernel import ScoreMatrix
 from model.markets import init_markets
-from model.solver import RatingsSolver, Event
+from model.solver import RatingsSolver
 from model.simulator import SimPoints
 from model.state import calc_league_table, calc_remaining_fixtures
 from model.stats import mean, std_deviation
 
-def calc_position_probabilities(sim_points, markets):
-    position_probs = {"default": sim_points.position_probabilities()}
-    for market in markets:
-        if ("include" in market or
-            "exclude" in market):
-            position_probs[market["name"]] = sim_points.position_probabilities(team_names = market["teams"])
-    return position_probs
+class Event(dict):
+
+    def __init__(self, event):
+        dict.__init__(self, event)
+
+    def probabilities(self, attr):
+        probs = [1 / price for price in self[attr]["prices"]]
+        overround = sum(probs)
+        return [prob / overround for prob in probs]
+
+    @property
+    def match_odds(self):
+        return self.probabilities("match_odds")
+
+    @property
+    def expected_home_points(self):
+        match_odds = self.match_odds
+        return 3 * match_odds[0] + match_odds[1]
+
+    @property
+    def expected_away_points(self):
+        match_odds = self.match_odds
+        return 3 * match_odds[2] + match_odds[1]
 
 def calc_training_errors(team_names, events, ratings, home_advantage):
     errors = {team_name: [] for team_name in team_names}
@@ -55,6 +71,14 @@ def calc_expected_season_points(team_names, results, remaining_fixtures, ratings
         exp_points[home_team_name] += matrix.expected_home_points
         exp_points[away_team_name] += matrix.expected_away_points
     return exp_points                                  
+
+def calc_position_probabilities(sim_points, markets):
+    position_probs = {"default": sim_points.position_probabilities()}
+    for market in markets:
+        if ("include" in market or
+            "exclude" in market):
+            position_probs[market["name"]] = sim_points.position_probabilities(team_names = market["teams"])
+    return position_probs
 
 def sum_product(X, Y):
     return sum([x*y for x, y in zip(X, Y)])
