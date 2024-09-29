@@ -1,6 +1,5 @@
 ### short
 
-- simplify Event in main
 - match odds functions to use mask
 - kernel calculator properties to use base function taking mask_fn
 - separate out AH, OU tests
@@ -29,6 +28,7 @@
 
 ### done
 
+- simplify Event in main
 - AH line solver
   - take the old asian_handicap_lines function
   - switch x, y axes
