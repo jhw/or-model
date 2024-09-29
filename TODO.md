@@ -4,7 +4,11 @@
   - take the old asian_handicap_lines function
   - switch x, y axes
   - interpolate x value for y = 0.5
+  
+- Event class needs AH, OU selectors
 
+- how to access/pass line inside selector_fn?
+  
 ### medium
 
 - proper handling of AH quarter/three-quarter lines
