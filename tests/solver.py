@@ -4,6 +4,11 @@ import json
 import random
 import unittest
 
+def filter_1x2_probabilities(event):
+    probs = [1 / price for price in event["match_odds"]["prices"]]
+    overround = sum(probs)
+    return [prob / overround for prob in probs]
+
 class SolverTest(unittest.TestCase):
 
     def setUp(self):
@@ -20,6 +25,8 @@ class SolverTest(unittest.TestCase):
         return events
     
     def test_ratings(self,
+                     model_selector = lambda event: event.match_odds,
+                     market_selector = lambda event: filter_1x2_probabilities(event),
                      rating_range = RatingRange,
                      home_advantage_range = HomeAdvantageRange):
         event = {"name": "A vs B",
@@ -27,10 +34,12 @@ class SolverTest(unittest.TestCase):
         ratings = {team_name: random.uniform(*rating_range)
                    for team_name in ["A", "B"]}
         home_advantage = sum(home_advantage_range) / 2
-        solver_resp = RatingsSolver().solve(events = [event],
-                                            ratings = ratings,
-                                            home_advantage = home_advantage,
-                                            max_iterations = 1000)
+        solver = RatingsSolver(model_selector = model_selector,
+                               market_selector = market_selector)
+        solver_resp = solver.solve(events = [event],
+                                   ratings = ratings,
+                                   home_advantage = home_advantage,
+                                   max_iterations = 1000)
         self.assertTrue(solver_resp["error"] < 0.1)
         self.assertEqual(solver_resp["home_advantage"], home_advantage)
 
@@ -38,13 +47,17 @@ class SolverTest(unittest.TestCase):
                               team_names = ["Man City",
                                             "Liverpool",
                                             "Arsenal"],
+                              model_selector = lambda event: event.match_odds,
+                              market_selector = lambda event: filter_1x2_probabilities(event),
                               rating_range = RatingRange):
         events = self.filter_events(team_names)
         ratings = {team_name: random.uniform(*rating_range)
                    for team_name in team_names}
-        solver_resp = RatingsSolver().solve(events = events,
-                                            ratings = ratings,
-                                            max_iterations = 1000)
+        solver = RatingsSolver(model_selector = model_selector,
+                               market_selector = market_selector)
+        solver_resp = solver.solve(events = events,
+                                   ratings = ratings,
+                                   max_iterations = 1000)
         self.assertTrue(solver_resp["error"] < 0.1)
         initial_bias = sum(HomeAdvantageRange) / 2
         self.assertTrue(abs(solver_resp["home_advantage"] - initial_bias) > 0.01)

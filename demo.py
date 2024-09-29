@@ -11,6 +11,11 @@ def filter_team_names(events):
             team_names.add(team_name)
     return sorted(list(team_names))
 
+def filter_1x2_probabilities(event):
+    probs = [1 / price for price in event["match_odds"]["prices"]]
+    overround = sum(probs)
+    return [prob / overround for prob in probs]
+
 if __name__ == "__main__":
     events = json.loads(open("fixtures/ENG1.json").read())
     team_names = filter_team_names(events)
@@ -24,6 +29,8 @@ if __name__ == "__main__":
                 "payoff": "1|19x0"}]
     resp = simulate(ratings = ratings,
                     training_set = training_set,
+                    model_selector = lambda event: event.match_odds,
+                    market_selector = lambda event: filter_1x2_probabilities(event),
                     results = results,
                     markets = markets)
     print(json.dumps(resp, indent = 2))

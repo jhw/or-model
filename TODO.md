@@ -1,13 +1,11 @@
 ### short
 
+- simplify Event in main
 - match odds functions to use mask
 - kernel calculator properties to use base function taking mask_fn
 - separate out AH, OU tests
-- Event class needs AH, OU selectors
+- AH + OU selector demo
 
-- how to access/pass line inside selector_fn?
-  - line will need to be passed from Event to matrix
-  
 ### medium
 
 - proper handling of AH quarter/three-quarter lines

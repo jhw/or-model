@@ -5,18 +5,12 @@ import numpy as np
 RatingRange = (0, 6)
 HomeAdvantageRange = (1, 1.5)
 
-def filter_normalised_match_odds_probabilities(event):
-    probs = [1 / price for price in event["match_odds"]["prices"]]
-    overround = sum(probs)
-    return [prob / overround for prob in probs]
 
 class RatingsSolver:
 
-    def __init__(self,
-                 model_fn = lambda event: getattr(event, "match_odds"),
-                 market_fn = lambda event: filter_normalised_match_odds_probabilities(event)):
-        self.model_fn = model_fn
-        self.market_fn = market_fn
+    def __init__(self, model_selector, market_selector):
+        self.model_selector = model_selector
+        self.market_selector = market_selector
     
     def rms_error(self, X, Y):
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
@@ -26,8 +20,8 @@ class RatingsSolver:
                                            ratings = ratings,
                                            home_advantage = home_advantage)
                     for event in events]        
-        errors = [self.rms_error(self.model_fn(matrix),
-                                 self.market_fn(event))
+        errors = [self.rms_error(self.model_selector(matrix),
+                                 self.market_selector(event))
                   for event, matrix in zip(events, matrices)]
         return np.mean(errors)
 
