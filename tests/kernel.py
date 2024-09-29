@@ -36,23 +36,25 @@ class KernelTest(unittest.TestCase):
     def test_asian_handicaps(self, lines = [0.25 * (i - 10) for i in range(21)]):
         self.assertTrue(self.matrix._home_handicap(0.25) > self.matrix._home_handicap(-0.25))
         self.assertTrue(self.matrix._away_handicap(0.25) < self.matrix._away_handicap(-0.25))
-        price_table = [self.matrix._asian_handicaps(line) for line in lines]
-        for line_prices in price_table:
+        handicap_lines = [self.matrix._asian_handicaps(line) for line in lines]
+        for line_prices in handicap_lines:
             self.assertTrue(abs(sum(line_prices) - 1) < 0.01)
-        home_prices = [line_prices[0] for line_prices in price_table]
+        home_prices = [line_prices[0] for line_prices in handicap_lines]
         self.assertEqual(home_prices, sorted(home_prices))
-        away_prices = [line_prices[1] for line_prices in price_table]
+        away_prices = [line_prices[1] for line_prices in handicap_lines]
         self.assertEqual(away_prices, list(reversed(sorted(away_prices))))
+        moneyline = self.matrix.asian_handicap_moneyline
+        self.assertTrue(moneyline < 0)
 
     def test_over_under_goals(self, lines = [i + 0.5 for i in range(10)]):
         self.assertTrue(self.matrix._over_goals(0.5) > self.matrix._over_goals(1.5))
         self.assertTrue(self.matrix._under_goals(0.5) < self.matrix._under_goals(1.5))
-        price_table = [self.matrix._over_under_goals(line) for line in lines]
-        for line_prices in price_table:
+        handicap_lines = [self.matrix._over_under_goals(line) for line in lines]
+        for line_prices in handicap_lines:
             self.assertTrue(abs(sum(line_prices) - 1) < 0.01)
-        over_prices = [line_prices[0] for line_prices in price_table]
+        over_prices = [line_prices[0] for line_prices in handicap_lines]
         self.assertEqual(over_prices, list(reversed(sorted(over_prices))))
-        under_prices = [line_prices[1] for line_prices in price_table]
+        under_prices = [line_prices[1] for line_prices in handicap_lines]
         self.assertEqual(under_prices, sorted(under_prices))
 
     def test_normalisation(self):

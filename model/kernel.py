@@ -117,12 +117,12 @@ class ScoreMatrix:
         mask = (i + line - j) < 0
         return float(np.sum(self.matrix[mask]))
 
-    def handicap_half_line(fn):
+    def handle_handicap_half_line(fn):
         def wrapped(self, handicap_fn, line):            
             return handicap_fn(line) if (line - 0.5).is_integer() else fn(self, handicap_fn, line)
         return wrapped
     
-    @handicap_half_line
+    @handle_handicap_half_line
     def _interpolate_handicap(self, handicap_fn, line):
         lower_line = round(line) - 0.5
         upper_line = lower_line + 1
@@ -146,6 +146,19 @@ class ScoreMatrix:
     @normalise
     def asian_handicaps(self, line):
         return self._asian_handicaps(line)
+
+    @property
+    def _handicap_half_lines(self):
+        lines = [i - math.ceil(self.n/2) + 0.5
+                 for i in range(self.n + 1)]
+        return [(line, self.asian_handicaps(line))
+                for line in lines]
+
+    @property
+    def asian_handicap_moneyline(self):
+        half_lines = self._handicap_half_lines
+        xy_coords = [(prices[0], line) for line, prices in half_lines]
+        return linear_interpolate(xy_coords, 0.5)
     
     ### over/under goals
 

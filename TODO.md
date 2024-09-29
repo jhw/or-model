@@ -1,13 +1,12 @@
 ### short
 
-- AH line solver
-  - take the old asian_handicap_lines function
-  - switch x, y axes
-  - interpolate x value for y = 0.5
-  
+- match odds functions to use mask
+- kernel calculator properties to use base function taking mask_fn
+- separate out AH, OU tests
 - Event class needs AH, OU selectors
 
 - how to access/pass line inside selector_fn?
+  - line will need to be passed from Event to matrix
   
 ### medium
 
@@ -32,6 +31,10 @@
 
 ### done
 
+- AH line solver
+  - take the old asian_handicap_lines function
+  - switch x, y axes
+  - interpolate x value for y = 0.5
 - explicit test for AH price ordering
 - refactor AH, OU tests
 - test for AH interpolation
