@@ -1,7 +1,5 @@
 ### short
 
-- update scraper
-- save fixtures with AH, OU
 - AH + OU selector demo
 
 ### medium
@@ -29,6 +27,8 @@
 
 ### done
 
+- update scraper
+- save fixtures with AH, OU
 - match odds functions to use mask
 - kernel calculator properties to use base function taking mask_fn
 - simplify Event in main
