@@ -2,6 +2,7 @@ from model.solver import RatingRange
 from model.main import simulate
 
 import json
+import pandas as pd
 import random
 
 def filter_team_names(events):
@@ -45,4 +46,10 @@ if __name__ == "__main__":
                     market_selector = lambda event: market_inputs(event),
                     results = results,                
                     markets = markets)
-    print(json.dumps(resp, indent = 2))
+    teams = [{"name": team["name"],
+              "ppg_rating": team["points_per_game_rating"]}
+              for team in resp["teams"]]
+    print(pd.DataFrame(sorted(teams,
+                              key = lambda x: -x["ppg_rating"])))
+    print()
+    print(f"Error: {resp['solver_error']:.6f}")
