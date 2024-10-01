@@ -1,8 +1,8 @@
 ### short
 
-- add back normalisation?
+- add back normalisation
 - simplify quarter/three quarter line adjustments
-- remove quarter/three quarter line adjustments as per chatgpt suggestion?
+- test removing quarter/three quarter line adjustments
 - check three quarter handicaps
 
 ### medium
