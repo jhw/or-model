@@ -60,6 +60,13 @@ class ScoreMatrix:
         mask = mask_fn(i, j)
         return float(np.sum(self.matrix[mask]))
 
+    def normalise(fn):
+        def wrapped(self, *args, **kwargs):
+            probabilities = fn(self, *args, **kwargs)
+            overround = sum(probabilities)
+            return [prob/overround for prob in probabilities]
+        return wrapped
+    
     ### match odds
     
     @property
@@ -77,8 +84,9 @@ class ScoreMatrix:
     @property
     def _match_odds(self):
         return [self._home_win, self._draw, self._away_win]
-
+    
     @property
+    @normalise
     def match_odds(self):
         return self._match_odds
     
@@ -176,16 +184,10 @@ class ScoreMatrix:
         return [self._home_handicap(line),
                 self._away_handicap(line)]
 
+    @normalise
     def asian_handicaps(self, line):
         return self._asian_handicaps(line)
 
-    @property
-    def _handicap_half_lines(self):
-        lines = [i - math.ceil(self.n/2) + 0.5
-                 for i in range(self.n + 1)]
-        return [(line, self.asian_handicaps(line))
-                for line in lines]
-    
     ### over/under goals
 
     def _over_goals(self, line):
@@ -198,6 +200,7 @@ class ScoreMatrix:
         return [self._over_goals(line),
                 self._under_goals(line)]
 
+    @normalise
     def over_under_goals(self, line):
         return self._over_under_goals(line)
 

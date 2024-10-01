@@ -37,10 +37,9 @@ class KernelTest(unittest.TestCase):
         self.assertTrue(self.matrix._home_handicap(0.25) > self.matrix._home_handicap(-0.25))
         self.assertTrue(self.matrix._away_handicap(0.25) < self.matrix._away_handicap(-0.25))
         line_prices = [self.matrix._asian_handicaps(line) for line in lines]
-        """
         for line, prices in zip(lines, line_prices):
-            print(line, prices[0], prices[1], sum(prices))
-        """
+            # self.assertTrue(abs(sum(prices) - 1) < 0.01)
+            pass
         home_prices = [prices[0] for prices in line_prices]
         self.assertEqual(home_prices, sorted(home_prices))
         away_prices = [prices[1] for prices in line_prices]
