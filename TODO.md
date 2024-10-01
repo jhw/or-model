@@ -1,12 +1,16 @@
 ### short
 
-- checks for 1x2 vs ah/ou results
+- remove interpolation code
+- remove enforce half handicap
+- add implementations for integer, quarter, three quarter hanicaps
+- ask chatgpt to validate implementation
+- ask chatgpt for switcher to switch between different implementations
+- (line+0.5).is_integer?
+- run demo again 
 
 ### medium
 
-- separate out AH, OU tests
 - stop solver test failing occasionally
-- proper handling of AH quarter/three-quarter lines
 
 ### thoughts
 
