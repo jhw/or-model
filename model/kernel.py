@@ -104,45 +104,33 @@ class ScoreMatrix:
     def _away_half_handicap(self, line):
         return self.probability(lambda i, j: (i + line - j) < 0)
 
-    def _home_quarter_handicap(self, line):
-        if line > 0:
-            half_prob = self._home_half_handicap(line + 0.25)
-            integer_prob = self._home_integer_handicap(line - 0.25)
-        else:
-            half_prob = self._home_half_handicap(line - 0.25)
-            integer_prob = self._home_integer_handicap(line + 0.25)
+    def _home_quarter_handicap(self, line, offset = 0.25):
+        polarity = (int(line > 0) * 2) - 1
+        half_prob = self._home_half_handicap(line + polarity * offset)
+        integer_prob = self._home_integer_handicap(line - polarity * offset)
         return (integer_prob + half_prob) / 2
 
-    def _away_quarter_handicap(self, line):
-        if line > 0:
-            half_prob = self._away_half_handicap(line + 0.25)
-            integer_prob = self._away_integer_handicap(line - 0.25)
-        else:
-            half_prob = self._away_half_handicap(line - 0.25)
-            integer_prob = self._away_integer_handicap(line + 0.25)            
+    def _away_quarter_handicap(self, line, offset = 0.25):
+        polarity = (int(line > 0) * 2) - 1
+        half_prob = self._away_half_handicap(line + polarity * offset)
+        integer_prob = self._away_integer_handicap(line - polarity *offset)
         return (integer_prob + half_prob) / 2
 
-    def _home_three_quarter_handicap(self, line):
-        if line > 0:
-            half_prob = self._home_half_handicap(line - 0.25)
-            integer_prob = self._home_integer_handicap(line + 0.25)
-        else:
-            half_prob = self._home_half_handicap(line + 0.25)
-            integer_prob = self._home_integer_handicap(line - 0.25)
+    def _home_three_quarter_handicap(self, line, offset = 0.25):
+        polarity = (int(line > 0) * 2) - 1
+        half_prob = self._home_half_handicap(line - polarity * offset)
+        integer_prob = self._home_integer_handicap(line + polarity * offset)
         return (integer_prob + half_prob) / 2
 
-    def _away_three_quarter_handicap(self, line):
-        if line > 0:
-            half_prob = self._away_half_handicap(line - 0.25)
-            integer_prob = self._away_integer_handicap(line + 0.25)
-        else:
-            half_prob = self._away_half_handicap(line + 0.25)
-            integer_prob = self._away_integer_handicap(line - 0.25)            
+    def _away_three_quarter_handicap(self, line, offset = 0.25):
+        polarity = (int(line > 0) * 2) - 1
+        half_prob = self._away_half_handicap(line - polarity * offset)
+        integer_prob = self._away_integer_handicap(line + polarity * offset)
         return (integer_prob + half_prob) / 2
     
     def _home_handicap(self, line):
         if line.is_integer():
-            return self._home_integer_handicap(line)
+            return self._home_integer_handicap(line)        
         elif (line + 0.5).is_integer():
             return self._home_half_handicap(line)
         elif line > 0:
@@ -161,7 +149,7 @@ class ScoreMatrix:
                 raise RuntimeError(f"no AH payoff for line {line}")
 
     def _away_handicap(self, line):
-        if line.is_integer():
+        if line.is_integer():            
             return self._away_integer_handicap(line)
         elif (line + 0.5).is_integer():
             return self._away_half_handicap(line)
