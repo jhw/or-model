@@ -129,7 +129,7 @@ class ScoreMatrix:
         return (integer_prob + half_prob) / 2
 
     def is_integer_line(self, line):
-        return line.is_integer()
+        return float(line).is_integer()
 
     def is_half_line(self, line):
         return (line + 0.5).is_integer()
@@ -152,7 +152,7 @@ class ScoreMatrix:
         elif self.is_three_quarter_line(line):
             return self._home_three_quarter_handicap(line)
         else:
-            raise RuntimeError(f"couldn't match AH line {line}")
+            raise RuntimeError(f"couldn't match AH home line for {line}")
 
     def _away_handicap(self, line):
         if self.is_integer_line(line):
@@ -164,7 +164,7 @@ class ScoreMatrix:
         elif self.is_three_quarter_line(line):
             return self._away_three_quarter_handicap(line)
         else:
-            raise RuntimeError(f"couldn't match AH line {line}")
+            raise RuntimeError(f"couldn't match AH away line for {line}")
 
     def _asian_handicaps(self, line):
         return [self._home_handicap(line),
