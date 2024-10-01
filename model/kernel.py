@@ -92,6 +92,34 @@ class ScoreMatrix:
     
     ### asian handicap
 
+    def is_integer_line(self, line):
+        return float(line).is_integer()
+
+    def is_half_line(self, line):
+        return (line + 0.5).is_integer()
+
+    def is_three_quarter_line(self, line):
+        return ((line > 0 and (line + 0.25).is_integer()) or
+                (line < 0 and (line - 0.25).is_integer()))
+
+    def is_quarter_line(self, line):
+        return ((line > 0 and (line - 0.25).is_integer()) or
+                (line < 0 and (line + 0.25).is_integer()))
+
+    def _three_quarter_boundary_lines(self, line, offset = 0.25):
+        polarity = (int(line > 0) * 2) - 1
+        integer_line = line + polarity * offset
+        half_line = line - polarity * offset
+        return {"integer": integer_line,
+                "half": half_line}    
+    
+    def _quarter_boundary_lines(self, line, offset = 0.25):
+        polarity = (int(line > 0) * 2) - 1
+        integer_line = line - polarity * offset
+        half_line = line + polarity * offset
+        return {"integer": integer_line,
+                "half": half_line}    
+
     def _home_integer_handicap(self, line):
         return self.probability(lambda i, j: (i + line - j) >= 0)
 
@@ -103,54 +131,40 @@ class ScoreMatrix:
 
     def _away_half_handicap(self, line):
         return self.probability(lambda i, j: (i + line - j) < 0)
+
+    def _home_three_quarter_handicap(self, line):
+        boundary_lines = self._three_quarter_boundary_lines(line)
+        integer_prob = self._home_integer_handicap(boundary_lines["integer"])
+        half_prob = self._home_half_handicap(boundary_lines["half"])
+        return (integer_prob + half_prob) / 2
+
+    def _away_three_quarter_handicap(self, line):
+        boundary_lines = self._three_quarter_boundary_lines(line)
+        integer_prob = self._away_integer_handicap(boundary_lines["integer"])
+        half_prob = self._away_half_handicap(boundary_lines["half"])
+        return (integer_prob + half_prob) / 2
     
-    def _home_quarter_handicap(self, line, offset = 0.25):
-        polarity = (int(line > 0) * 2) - 1
-        half_prob = self._home_half_handicap(line + polarity * offset)
-        integer_prob = self._home_integer_handicap(line - polarity * offset)
+    def _home_quarter_handicap(self, line):
+        boundary_lines = self._quarter_boundary_lines(line)
+        integer_prob = self._home_integer_handicap(boundary_lines["integer"])
+        half_prob = self._home_half_handicap(boundary_lines["half"])
         return (integer_prob + half_prob) / 2
 
-    def _away_quarter_handicap(self, line, offset = 0.25):
-        polarity = (int(line > 0) * 2) - 1
-        half_prob = self._away_half_handicap(line + polarity * offset)
-        integer_prob = self._away_integer_handicap(line - polarity *offset)
+    def _away_quarter_handicap(self, line):
+        boundary_lines = self._quarter_boundary_lines(line)
+        integer_prob = self._away_integer_handicap(boundary_lines["integer"])
+        half_prob = self._away_half_handicap(boundary_lines["half"])
         return (integer_prob + half_prob) / 2
-
-    def _home_three_quarter_handicap(self, line, offset = 0.25):
-        polarity = (int(line > 0) * 2) - 1
-        half_prob = self._home_half_handicap(line - polarity * offset)
-        integer_prob = self._home_integer_handicap(line + polarity * offset)
-        return (integer_prob + half_prob) / 2
-
-    def _away_three_quarter_handicap(self, line, offset = 0.25):
-        polarity = (int(line > 0) * 2) - 1
-        half_prob = self._away_half_handicap(line - polarity * offset)
-        integer_prob = self._away_integer_handicap(line + polarity * offset)
-        return (integer_prob + half_prob) / 2
-
-    def is_integer_line(self, line):
-        return float(line).is_integer()
-
-    def is_half_line(self, line):
-        return (line + 0.5).is_integer()
-
-    def is_quarter_line(self, line):
-        return ((line > 0 and (line - 0.25).is_integer()) or
-                (line < 0 and (line + 0.25).is_integer()))
-
-    def is_three_quarter_line(self, line):
-        return ((line > 0 and (line + 0.25).is_integer()) or
-                (line < 0 and (line - 0.25).is_integer()))
-        
+            
     def _home_handicap(self, line):
         if self.is_integer_line(line):
             return self._home_integer_handicap(line)
         elif self.is_half_line(line):
             return self._home_half_handicap(line)
-        elif self.is_quarter_line(line):
-            return self._home_quarter_handicap(line)
         elif self.is_three_quarter_line(line):
             return self._home_three_quarter_handicap(line)
+        elif self.is_quarter_line(line):
+            return self._home_quarter_handicap(line)
         else:
             raise RuntimeError(f"couldn't match AH home line for {line}")
 
@@ -159,10 +173,10 @@ class ScoreMatrix:
             return self._away_integer_handicap(line)
         elif self.is_half_line(line):
             return self._away_half_handicap(line)
-        elif self.is_quarter_line(line):          
-            return self._away_quarter_handicap(line)
         elif self.is_three_quarter_line(line):
             return self._away_three_quarter_handicap(line)
+        elif self.is_quarter_line(line):          
+            return self._away_quarter_handicap(line)
         else:
             raise RuntimeError(f"couldn't match AH away line for {line}")
 

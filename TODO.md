@@ -1,7 +1,5 @@
 ### short
 
-- separate out half, integer calculations for three quarter/quarter lines, and test
-
 - add back AH, OU demos
 
 ### medium
@@ -27,6 +25,7 @@
 
 ### done
 
+- separate out half, integer calculations for three quarter/quarter lines, and test
 - tests for line switch helpers
 - add back normalisation
 - simplify quarter/three quarter line adjustments
