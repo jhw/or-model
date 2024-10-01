@@ -1,12 +1,9 @@
 ### short
 
-- remove interpolation code
-- remove enforce half handicap
-- add implementations for integer, quarter, three quarter hanicaps
-- ask chatgpt to validate implementation
-- ask chatgpt for switcher to switch between different implementations
-- (line+0.5).is_integer?
-- run demo again 
+- add back normalisation?
+- simplify quarter/three quarter line adjustments
+- remove quarter/three quarter line adjustments as per chatgpt suggestion?
+- check three quarter handicaps
 
 ### medium
 
@@ -30,6 +27,14 @@
   - not sure it's worth it
 
 ### done
+
+- remove interpolation code
+- remove enforce half handicap
+- add implementations for integer, quarter, three quarter hanicaps
+- ask chatgpt to validate implementation
+- ask chatgpt for switcher to switch between different implementations
+- (line+0.5).is_integer?
+- run demo again 
 
 - AH + OU selector demo
 - update scraper

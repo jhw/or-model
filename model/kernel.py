@@ -18,17 +18,6 @@ def dixon_coles_adjustment(i, j, rho):
     else:
         return 1
 
-def linear_interpolate(xy_coords, x):
-    if x < xy_coords[0][0] or x > xy_coords[-1][0]:
-        raise RuntimeError("the x value is out of the interpolation range")
-    for i in range(len(xy_coords) - 1):
-        x0, y0 = xy_coords[i]
-        x1, y1 = xy_coords[i + 1]        
-        if x0 <= x <= x1:
-            y = y0 + (y1 - y0) * (x - x0) / (x1 - x0)
-            return y
-    raise RuntimeError("interpolation failed due to unexpected input")
-    
 class ScoreMatrix:
 
     @classmethod
@@ -66,25 +55,11 @@ class ScoreMatrix:
                    for j in range(self.matrix.shape[1])]
         return [indexes[i] for i in chosen_indices]
     
-    def enforce_half_line(fn):
-        def wrapped(self, line):
-            if not (line - 0.5).is_integer():
-                raise RuntimeError(f"line must be a half line: {line}")
-            return fn(self, line)
-        return wrapped
-    
-    def normalise(fn):
-        def wrapped(self, *args, **kwargs):
-            probabilities = fn(self, *args, **kwargs)
-            overround = sum(probabilities)
-            return [prob/overround for prob in probabilities]
-        return wrapped
-
     def probability(self, mask_fn):
         i, j = np.indices(self.matrix.shape)
         mask = mask_fn(i, j)
         return float(np.sum(self.matrix[mask]))
-    
+
     ### match odds
     
     @property
@@ -104,47 +79,103 @@ class ScoreMatrix:
         return [self._home_win, self._draw, self._away_win]
 
     @property
-    @normalise
     def match_odds(self):
         return self._match_odds
     
     ### asian handicap
 
-    @enforce_half_line
-    def __home_handicap(self, line):
+    def _home_integer_handicap(self, line):
+        return self.probability(lambda i, j: (i + line - j) >= 0)
+
+    def _away_integer_handicap(self, line):
+        return self.probability(lambda i, j: (i + line - j) <= 0)
+
+    def _home_half_handicap(self, line):
         return self.probability(lambda i, j: (i + line - j) > 0)
 
-    @enforce_half_line
-    def __away_handicap(self, line):
+    def _away_half_handicap(self, line):
         return self.probability(lambda i, j: (i + line - j) < 0)
 
-    def handle_handicap_half_line(fn):
-        def wrapped(self, handicap_fn, line):            
-            return handicap_fn(line) if (line - 0.5).is_integer() else fn(self, handicap_fn, line)
-        return wrapped
-    
-    @handle_handicap_half_line
-    def _interpolate_handicap(self, handicap_fn, line):
-        lower_line = round(line) - 0.5
-        upper_line = lower_line + 1
-        lower_prob = handicap_fn(lower_line)
-        upper_prob = handicap_fn(upper_line)
-        return linear_interpolate([(lower_line, lower_prob),
-                                   (upper_line, upper_prob)], line)
+    def _home_quarter_handicap(self, line):
+        if line > 0:
+            half_prob = self._home_half_handicap(line + 0.25)
+            integer_prob = self._home_integer_handicap(line - 0.25)
+        else:
+            half_prob = self._home_half_handicap(line - 0.25)
+            integer_prob = self._home_integer_handicap(line + 0.25)
+        return (integer_prob + half_prob) / 2
+
+    def _away_quarter_handicap(self, line):
+        if line > 0:
+            half_prob = self._away_half_handicap(line + 0.25)
+            integer_prob = self._away_integer_handicap(line - 0.25)
+        else:
+            half_prob = self._away_half_handicap(line - 0.25)
+            integer_prob = self._away_integer_handicap(line + 0.25)            
+        return (integer_prob + half_prob) / 2
+
+    def _home_three_quarter_handicap(self, line):
+        if line > 0:
+            half_prob = self._home_half_handicap(line - 0.25)
+            integer_prob = self._home_integer_handicap(line + 0.25)
+        else:
+            half_prob = self._home_half_handicap(line + 0.25)
+            integer_prob = self._home_integer_handicap(line - 0.25)
+        return (integer_prob + half_prob) / 2
+
+    def _away_three_quarter_handicap(self, line):
+        if line > 0:
+            half_prob = self._away_half_handicap(line - 0.25)
+            integer_prob = self._away_integer_handicap(line + 0.25)
+        else:
+            half_prob = self._away_half_handicap(line + 0.25)
+            integer_prob = self._away_integer_handicap(line - 0.25)            
+        return (integer_prob + half_prob) / 2
     
     def _home_handicap(self, line):
-        return self._interpolate_handicap(handicap_fn = self.__home_handicap,
-                                          line = line)
+        if line.is_integer():
+            return self._home_integer_handicap(line)
+        elif (line + 0.5).is_integer():
+            return self._home_half_handicap(line)
+        elif line > 0:
+            if (line - 0.25).is_integer():
+                return self._home_quarter_handicap(line)
+            elif (line + 0.25).is_integer():
+                return self._home_three_quarter_handicap(line)
+            else:
+                raise RuntimeError(f"no AH payoff for line {line}")
+        else:
+            if (line + 0.25).is_integer():
+                return self._home_quarter_handicap(line)
+            elif (line - 0.25).is_integer():
+                return self._home_three_quarter_handicap(line)
+            else:
+                raise RuntimeError(f"no AH payoff for line {line}")
 
     def _away_handicap(self, line):
-        return self._interpolate_handicap(handicap_fn = self.__away_handicap,
-                                          line = line)
+        if line.is_integer():
+            return self._away_integer_handicap(line)
+        elif (line + 0.5).is_integer():
+            return self._away_half_handicap(line)
+        elif line > 0:
+            if (line - 0.25).is_integer():
+                return self._away_quarter_handicap(line)
+            elif (line + 0.25).is_integer():
+                return self._away_three_quarter_handicap(line)
+            else:
+                raise RuntimeError(f"no AH payoff for line {line}")
+        else:
+            if (line + 0.25).is_integer():
+                return self._away_quarter_handicap(line)
+            elif (line - 0.25).is_integer():
+                return self._away_three_quarter_handicap(line)
+            else:
+                raise RuntimeError(f"no AH payoff for line {line}")
 
     def _asian_handicaps(self, line):
         return [self._home_handicap(line),
                 self._away_handicap(line)]
 
-    @normalise
     def asian_handicaps(self, line):
         return self._asian_handicaps(line)
 
@@ -154,20 +185,12 @@ class ScoreMatrix:
                  for i in range(self.n + 1)]
         return [(line, self.asian_handicaps(line))
                 for line in lines]
-
-    @property
-    def asian_handicap_moneyline(self):
-        half_lines = self._handicap_half_lines
-        xy_coords = [(prices[0], line) for line, prices in half_lines]
-        return linear_interpolate(xy_coords, 0.5)
     
     ### over/under goals
 
-    @enforce_half_line
     def _over_goals(self, line):
         return self.probability(lambda i, j: (i + j) > line)
 
-    @enforce_half_line
     def _under_goals(self, line):
         return self.probability(lambda i, j: (i + j) < line)
 
@@ -175,7 +198,6 @@ class ScoreMatrix:
         return [self._over_goals(line),
                 self._under_goals(line)]
 
-    @normalise
     def over_under_goals(self, line):
         return self._over_under_goals(line)
 
