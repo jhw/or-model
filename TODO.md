@@ -1,9 +1,6 @@
 ### short
 
-- add back normalisation
-- simplify quarter/three quarter line adjustments
-- test removing quarter/three quarter line adjustments
-- check three quarter handicaps
+- tests for line switch helpers
 
 ### medium
 
@@ -28,6 +25,10 @@
 
 ### done
 
+- add back normalisation
+- simplify quarter/three quarter line adjustments
+- test removing quarter/three quarter line adjustments
+- check three quarter handicaps
 - remove interpolation code
 - remove enforce half handicap
 - add implementations for integer, quarter, three quarter hanicaps

@@ -103,7 +103,7 @@ class ScoreMatrix:
 
     def _away_half_handicap(self, line):
         return self.probability(lambda i, j: (i + line - j) < 0)
-
+    
     def _home_quarter_handicap(self, line, offset = 0.25):
         polarity = (int(line > 0) * 2) - 1
         half_prob = self._home_half_handicap(line + polarity * offset)
@@ -127,46 +127,44 @@ class ScoreMatrix:
         half_prob = self._away_half_handicap(line - polarity * offset)
         integer_prob = self._away_integer_handicap(line + polarity * offset)
         return (integer_prob + half_prob) / 2
-    
+
+    def is_integer_line(self, line):
+        return line.is_integer()
+
+    def is_half_line(self, line):
+        return (line + 0.5).is_integer()
+
+    def is_quarter_line(self, line):
+        return ((line > 0 and (line - 0.25).is_integer()) or
+                (line < 0 and (line + 0.25).is_integer()))
+
+    def is_three_quarter_line(self, line):
+        return ((line > 0 and (line + 0.25).is_integer()) or
+                (line < 0 and (line - 0.25).is_integer()))
+        
     def _home_handicap(self, line):
-        if line.is_integer():
-            return self._home_integer_handicap(line)        
-        elif (line + 0.5).is_integer():
+        if self.is_integer_line(line):
+            return self._home_integer_handicap(line)
+        elif self.is_half_line(line):
             return self._home_half_handicap(line)
-        elif line > 0:
-            if (line - 0.25).is_integer():
-                return self._home_quarter_handicap(line)
-            elif (line + 0.25).is_integer():
-                return self._home_three_quarter_handicap(line)
-            else:
-                raise RuntimeError(f"no AH payoff for line {line}")
+        elif self.is_quarter_line(line):
+            return self._home_quarter_handicap(line)
+        elif self.is_three_quarter_line(line):
+            return self._home_three_quarter_handicap(line)
         else:
-            if (line + 0.25).is_integer():
-                return self._home_quarter_handicap(line)
-            elif (line - 0.25).is_integer():
-                return self._home_three_quarter_handicap(line)
-            else:
-                raise RuntimeError(f"no AH payoff for line {line}")
+            raise RuntimeError(f"couldn't match AH line {line}")
 
     def _away_handicap(self, line):
-        if line.is_integer():            
+        if self.is_integer_line(line):
             return self._away_integer_handicap(line)
-        elif (line + 0.5).is_integer():
+        elif self.is_half_line(line):
             return self._away_half_handicap(line)
-        elif line > 0:
-            if (line - 0.25).is_integer():
-                return self._away_quarter_handicap(line)
-            elif (line + 0.25).is_integer():
-                return self._away_three_quarter_handicap(line)
-            else:
-                raise RuntimeError(f"no AH payoff for line {line}")
+        elif self.is_quarter_line(line):          
+            return self._away_quarter_handicap(line)
+        elif self.is_three_quarter_line(line):
+            return self._away_three_quarter_handicap(line)
         else:
-            if (line + 0.25).is_integer():
-                return self._away_quarter_handicap(line)
-            elif (line - 0.25).is_integer():
-                return self._away_three_quarter_handicap(line)
-            else:
-                raise RuntimeError(f"no AH payoff for line {line}")
+            raise RuntimeError(f"couldn't match AH line {line}")
 
     def _asian_handicaps(self, line):
         return [self._home_handicap(line),
