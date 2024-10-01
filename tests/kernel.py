@@ -56,5 +56,10 @@ class KernelTest(unittest.TestCase):
         under_prices = [prices[1] for prices in line_prices]
         self.assertEqual(under_prices, sorted(under_prices))
 
+    def test_normalisation(self):
+        self.assertAlmostEqual(sum(self.matrix.match_odds), 1)
+        self.assertAlmostEqual(sum(self.matrix.asian_handicaps(-0.5)), 1)
+        self.assertAlmostEqual(sum(self.matrix.over_under_goals(2.5)), 1)
+
 if __name__ == "__main__":
     unittest.main()
