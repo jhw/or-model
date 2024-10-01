@@ -120,17 +120,23 @@ class ScoreMatrix:
         return {"integer": integer_line,
                 "half": half_line}    
 
-    def _home_integer_handicap(self, line):
-        return self.probability(lambda i, j: (i + line - j) >= 0)
-
-    def _away_integer_handicap(self, line):
-        return self.probability(lambda i, j: (i + line - j) <= 0)
-
     def _home_half_handicap(self, line):
         return self.probability(lambda i, j: (i + line - j) > 0)
 
     def _away_half_handicap(self, line):
         return self.probability(lambda i, j: (i + line - j) < 0)
+    
+    def _home_integer_handicap(self, line):
+        win_prob = self._home_half_handicap(line)
+        draw_prob = self.probability(lambda i, j: (i + line - j) == 0)
+        denominator = win_prob + draw_prob
+        return 0.0 if denominator == 0 else win_prob / denominator
+    
+    def _away_integer_handicap(self, line):
+        win_prob = self._away_half_handicap(line)
+        draw_prob = self.probability(lambda i, j: (i + line - j) == 0)
+        denominator = win_prob + draw_prob
+        return 0.0 if denominator == 0 else win_prob / denominator
 
     def _home_three_quarter_handicap(self, line):
         boundary_lines = self._three_quarter_boundary_lines(line)

@@ -1,6 +1,6 @@
 ### short
 
-- re- check push logic
+- revisit integer logic
 
 - add back AH, OU demos
 
@@ -27,6 +27,7 @@
 
 ### done
 
+- re- check push logic
 - separate out half, integer calculations for three quarter/quarter lines, and test
 - tests for line switch helpers
 - add back normalisation
