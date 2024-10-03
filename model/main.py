@@ -3,7 +3,16 @@ from model.markets import init_markets
 from model.solver import RatingsSolver
 from model.simulator import SimPoints
 from model.state import calc_league_table, calc_remaining_fixtures
-from model.stats import mean, std_deviation
+
+def mean(X):
+    return sum(X) / len(X) if X != [] else 0
+
+def variance(X):
+    m = mean(X)
+    return sum([(x - m) ** 2 for x in X])
+
+def std_deviation(X):
+    return variance(X) ** 0.5
 
 class Event(dict):
 
