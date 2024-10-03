@@ -92,5 +92,30 @@ class KernelTest(unittest.TestCase):
             self.assertEqual(integer_line, boundary_lines["integer"])
             self.assertEqual(half_line, boundary_lines["half"])
 
+    def test_match_odds(self):
+        match_odds = [self.matrix._home_win,
+                      self.matrix._draw,
+                      self.matrix._away_win]
+        self.assertTrue(abs(sum(match_odds) - 1) < 0.01)
+        self.assertTrue(abs(sum(self.matrix._match_odds) - 1) < 0.01)
+ 
+    def test_asian_handicaps(self):
+        self.assertTrue(self.matrix._home_handicap(0.5) > self.matrix._home_handicap(-0.5))
+        self.assertTrue(self.matrix._away_handicap(0.5) < self.matrix._away_handicap(-0.5))
+        home_prices = [item[1][0] for item in self.matrix.asian_handicap_lines]
+        self.assertEqual(home_prices, sorted(home_prices))
+
+    def test_over_under_goals(self):
+        self.assertTrue(self.matrix._over_goals(0.5) > self.matrix._over_goals(1.5))
+        self.assertTrue(self.matrix._under_goals(0.5) < self.matrix._under_goals(1.5))
+        under_prices = [item[1][1] for item in self.matrix.over_under_goals_lines]
+        self.assertEqual(under_prices, sorted(under_prices))
+
+    def test_normalisation(self):
+        self.assertAlmostEqual(sum(self.matrix.match_odds), 1)
+        self.assertAlmostEqual(sum(self.matrix.asian_handicaps(-0.5)), 1)
+        self.assertAlmostEqual(sum(self.matrix.over_under_goals(2.5)), 1)
+
+            
 if __name__ == "__main__":
     unittest.main()

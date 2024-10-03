@@ -125,7 +125,8 @@ class ScoreMatrix:
 
     def _away_half_handicap(self, line):
         return self.probability(lambda i, j: (i + line - j) < 0)
-    
+
+    """
     def _home_integer_handicap(self, line):
         win_prob = self._home_half_handicap(line)
         draw_prob = self.probability(lambda i, j: (i + line - j) == 0)
@@ -137,7 +138,14 @@ class ScoreMatrix:
         draw_prob = self.probability(lambda i, j: (i + line - j) == 0)
         denominator = win_prob + draw_prob
         return 0.0 if denominator == 0 else win_prob / denominator
+    """
 
+    def _home_integer_handicap(self, line):
+        return self.probability(lambda i, j: (i + line - j) >= 0)
+
+    def _away_integer_handicap(self, line):
+        return self.probability(lambda i, j: (i + line - j) <= 0)
+    
     def _home_three_quarter_handicap(self, line):
         boundary_lines = self._three_quarter_boundary_lines(line)
         integer_prob = self._home_integer_handicap(boundary_lines["integer"])
@@ -197,7 +205,7 @@ class ScoreMatrix:
     @property
     def asian_handicap_lines(self, interval = 0.25):
         n = int(self.n / interval)
-        lines = [i * interval for i in range(-n, n + 1)]
+        lines = [i * interval for i in range(-n + 1, n)]
         return [(line, self.asian_handicaps(line))
                 for line in lines]
     
@@ -217,6 +225,12 @@ class ScoreMatrix:
     def over_under_goals(self, line):
         return self._over_under_goals(line)
 
+    @property
+    def over_under_goals_lines(self, interval = 0.25):
+        lines = [i + 0.5 for i in range(self.n)]
+        return [(line, self.over_under_goals(line))
+                for line in lines]
+    
     ### expected points
     
     @property

@@ -1,10 +1,8 @@
 ### short
 
-- revisit integer logic
-
-- add back AH, OU demos
-
 ### medium
+
+- whole handicap logic
 
 - stop solver test failing occasionally
 
@@ -27,6 +25,7 @@
 
 ### done
 
+- add back AH, OU demos
 - re- check push logic
 - separate out half, integer calculations for three quarter/quarter lines, and test
 - tests for line switch helpers
