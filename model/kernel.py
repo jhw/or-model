@@ -194,6 +194,13 @@ class ScoreMatrix:
     def asian_handicaps(self, line):
         return self._asian_handicaps(line)
 
+    @property
+    def asian_handicap_lines(self, interval = 0.25):
+        n = int(self.n / interval)
+        lines = [i * interval for i in range(-n, n + 1)]
+        return [(line, self.asian_handicaps(line))
+                for line in lines]
+    
     ### over/under goals
 
     def _over_goals(self, line):
