@@ -1,4 +1,9 @@
-### short
+### short [01-sco-fix]
+
+- change demo-1x2 to output winner marks
+- example existing fixture format
+- script to create fixtures on per league basis
+- test SCO2 etc
 
 ### medium
 
