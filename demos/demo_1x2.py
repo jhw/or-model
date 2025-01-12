@@ -4,6 +4,7 @@ from model.main import simulate
 import json
 import pandas as pd
 import random
+import yaml
 
 def filter_team_names(events):
     team_names = set()
@@ -37,7 +38,14 @@ if __name__ == "__main__":
     teams = [{"name": team["name"],
               "ppg_rating": team["points_per_game_rating"]}
               for team in resp["teams"]]
+    """
     print(pd.DataFrame(sorted(teams,
                               key = lambda x: -x["ppg_rating"])))
     print()
     print(f"Error: {resp['solver_error']:.6f}")
+    """
+    print(yaml.safe_dump(sorted([mark for mark in resp["outright_marks"]
+                                 if (mark["market"] == "Winner" and
+                                     mark["mark"] != 0)],
+                                key = lambda x: -x["mark"]),
+                         default_flow_style = False))
