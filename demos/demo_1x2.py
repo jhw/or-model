@@ -39,15 +39,20 @@ if __name__ == "__main__":
         winner_payoff = f"1|{len(team_names)-1}x0"
         markets = [{"name": "Winner",
                     "payoff": winner_payoff}]
+        rounds = 2 if "SCO" in league_name else 1
         resp = simulate(ratings = ratings,
                         training_set = training_set,
                         model_selector = lambda event, matrix: matrix.match_odds,
                         market_selector = lambda event: filter_1x2_probabilities(event),
                         results = results,
-                        markets = markets)
-        teams = [{"name": team["name"],
-                  "ppg_rating": team["points_per_game_rating"]}
-                 for team in resp["teams"]]
+                        markets = markets,
+                        rounds = rounds)
+        print(yaml.safe_dump(sorted([{"name": team["name"],
+                                      "points": team["points"],
+                                      "ppg_rating": team["points_per_game_rating"]}
+                                     for team in resp["teams"]],
+                                    key = lambda x: -x["ppg_rating"]),
+                             default_flow_style = False))
         print(yaml.safe_dump(sorted([mark for mark in resp["outright_marks"]
                                      if mark["mark"] != 0],
                                     key = lambda x: -x["mark"]),

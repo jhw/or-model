@@ -1,6 +1,5 @@
 ### short [01-sco-fix]
 
-
 ### medium
 
 - whole handicap logic
