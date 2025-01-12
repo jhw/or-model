@@ -1,9 +1,5 @@
 ### short [01-sco-fix]
 
-- change demo-1x2 to output winner marks
-- example existing fixture format
-- script to create fixtures on per league basis
-- test SCO2 etc
 
 ### medium
 
@@ -30,6 +26,10 @@
 
 ### done
 
+- change demo-1x2 to output winner marks
+- example existing fixture format
+- script to create fixtures on per league basis
+- test SCO2 etc
 - add back AH, OU demos
 - re- check push logic
 - separate out half, integer calculations for three quarter/quarter lines, and test

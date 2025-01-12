@@ -2,8 +2,10 @@ from model.solver import RatingRange
 from model.main import simulate
 
 import json
-import pandas as pd
+import os
 import random
+import re
+import sys
 import yaml
 
 def filter_team_names(events):
@@ -19,33 +21,36 @@ def filter_1x2_probabilities(event):
     return [prob / overround for prob in probs]
 
 if __name__ == "__main__":
-    events = json.loads(open("fixtures/ENG1.json").read())
-    team_names = filter_team_names(events)
-    ratings = {team_name: random.uniform(*RatingRange)
-               for team_name in team_names}
-    results = [event for event in events
-               if event["date"] < "2024-01-01"]
-    training_set = sorted(results,
-                          key = lambda x: x["date"])[-60:]
-    markets = [{"name": "Winner",
-                "payoff": "1|19x0"}]
-    resp = simulate(ratings = ratings,
-                    training_set = training_set,
-                    model_selector = lambda event, matrix: matrix.match_odds,
-                    market_selector = lambda event: filter_1x2_probabilities(event),
-                    results = results,
-                    markets = markets)
-    teams = [{"name": team["name"],
-              "ppg_rating": team["points_per_game_rating"]}
-              for team in resp["teams"]]
-    """
-    print(pd.DataFrame(sorted(teams,
-                              key = lambda x: -x["ppg_rating"])))
-    print()
-    print(f"Error: {resp['solver_error']:.6f}")
-    """
-    print(yaml.safe_dump(sorted([mark for mark in resp["outright_marks"]
-                                 if (mark["market"] == "Winner" and
-                                     mark["mark"] != 0)],
-                                key = lambda x: -x["mark"]),
-                         default_flow_style = False))
+    try:
+        if len(sys.argv) < 2:
+            raise RuntimeError("please enter league")
+        league_name = sys.argv[1]
+        if not re.search("^\\D{3}\\d{1}", league_name):
+            raise RuntimeError("league is invalid")
+        file_name = f"fixtures/{league_name}.json"
+        if not os.path.exists(file_name):
+            raise RuntimeError(f"{file_name} does not exist")
+        results = json.loads(open(file_name).read())
+        team_names = filter_team_names(results)
+        ratings = {team_name: random.uniform(*RatingRange)
+                   for team_name in team_names}
+        training_set = sorted(results,
+                              key = lambda x: x["date"])[-3*len(team_names):]
+        winner_payoff = f"1|{len(team_names)-1}x0"
+        markets = [{"name": "Winner",
+                    "payoff": winner_payoff}]
+        resp = simulate(ratings = ratings,
+                        training_set = training_set,
+                        model_selector = lambda event, matrix: matrix.match_odds,
+                        market_selector = lambda event: filter_1x2_probabilities(event),
+                        results = results,
+                        markets = markets)
+        teams = [{"name": team["name"],
+                  "ppg_rating": team["points_per_game_rating"]}
+                 for team in resp["teams"]]
+        print(yaml.safe_dump(sorted([mark for mark in resp["outright_marks"]
+                                     if mark["mark"] != 0],
+                                    key = lambda x: -x["mark"]),
+                             default_flow_style = False))
+    except RuntimeError as error:
+        print(f"Error: {error}")
