@@ -1,8 +1,8 @@
-def calc_league_table(team_names, results):
+def calc_league_table(team_names, results, handicaps = {}):
     # Initialize league table with team names
     league_table = {team_name: {'name': team_name,
                                 'played': 0,
-                                'points': 0,
+                                'points': handicaps[team_name] if team_name in handicaps else 0,
                                 'goal_difference': 0} for team_name in team_names}
 
     for result in results:
