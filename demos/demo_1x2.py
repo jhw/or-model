@@ -45,6 +45,7 @@ if __name__ == "__main__":
                         model_selector = lambda event, matrix: matrix.match_odds,
                         market_selector = lambda event: filter_1x2_probabilities(event),
                         results = results,
+                        handicaps = {},
                         markets = markets,
                         rounds = rounds)
         print(yaml.safe_dump(sorted([{"name": team["name"],

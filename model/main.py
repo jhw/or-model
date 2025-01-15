@@ -68,10 +68,11 @@ def calc_points_per_game_ratings(team_names, ratings, home_advantage):
     return {team_name:ppg_value / n_games
             for team_name, ppg_value in ppg_ratings.items()}
 
-def calc_expected_season_points(team_names, results, remaining_fixtures, ratings, home_advantage):
+def calc_expected_season_points(team_names, results, handicaps, remaining_fixtures, ratings, home_advantage):
     exp_points = {team["name"]: team["points"]
                   for team in calc_league_table(team_names = team_names,
-                                                results = results)}
+                                                results = results,
+                                                handicaps = handicaps)}
     for event_name in remaining_fixtures:
         home_team_name, away_team_name = event_name.split(" vs ")
         matrix = ScoreMatrix.initialise(event_name = event_name,
@@ -113,12 +114,14 @@ def simulate(ratings,
              max_iterations = 100,
              n_paths = 1000,
              results = [],
+             handicaps = {},
              markets = [],
              rounds = 1):
     team_names = sorted(list(ratings.keys()))
     init_markets(team_names, markets)
     league_table = calc_league_table(team_names = team_names,
-                                     results = results)
+                                     results = results,
+                                     handicaps = handicaps)
     remaining_fixtures = calc_remaining_fixtures(team_names = team_names,
                                                  results = results,
                                                  rounds = rounds)
@@ -143,6 +146,7 @@ def simulate(ratings,
                                            home_advantage = home_advantage)
     season_points = calc_expected_season_points(team_names = team_names,
                                                 results = results,
+                                                handicaps = handicaps,
                                                 remaining_fixtures = remaining_fixtures,
                                                 ratings = poisson_ratings,
                                                 home_advantage = home_advantage)

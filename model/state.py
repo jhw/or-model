@@ -1,4 +1,4 @@
-def calc_league_table(team_names, results, handicaps = {}):
+def calc_league_table(team_names, results, handicaps):
     # Initialize league table with team names
     league_table = {team_name: {'name': team_name,
                                 'played': 0,
