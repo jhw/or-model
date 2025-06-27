@@ -1,10 +1,15 @@
-from scipy.special import factorial
-
 import math
 import numpy as np
 
+def factorial_vectorized(k):
+    """Vectorized factorial function that works with numpy arrays"""
+    if np.isscalar(k):
+        return math.factorial(int(k))
+    else:
+        return np.array([math.factorial(int(x)) for x in k.flat]).reshape(k.shape)
+
 def poisson_prob(lmbda, k):
-    return (lmbda ** k) * np.exp(-lmbda) / factorial(k)
+    return (lmbda ** k) * np.exp(-lmbda) / factorial_vectorized(k)
 
 def dixon_coles_adjustment(i, j, rho):
     if i == 0 and j == 0:

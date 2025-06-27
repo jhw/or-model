@@ -1,9 +1,84 @@
 from model.kernel import ScoreMatrix
-from scipy.optimize import minimize
 import numpy as np
+import math
 
 RatingRange = (0, 6)
 HomeAdvantageRange = (1, 1.5)
+
+class OptimizationResult:
+    def __init__(self, x, fun, success=True):
+        self.x = x
+        self.fun = fun
+        self.success = success
+
+def minimize(objective, x0, bounds=None, options=None):
+    """Simple gradient-free optimization using coordinate descent with random restarts"""
+    if options is None:
+        options = {}
+    
+    max_iter = options.get('maxiter', 100)
+    learning_rate = 0.01
+    tolerance = 1e-6
+    
+    x = np.array(x0, dtype=float)
+    best_x = x.copy()
+    best_fun = objective(x)
+    
+    # Multiple random restarts for better global optimization
+    for restart in range(3):
+        if restart > 0:
+            # Random restart within bounds
+            if bounds:
+                for i in range(len(x)):
+                    low, high = bounds[i]
+                    x[i] = np.random.uniform(low, high)
+            else:
+                x = np.array(x0) + np.random.normal(0, 0.1, len(x0))
+        
+        current_fun = objective(x)
+        
+        for iteration in range(max_iter):
+            old_fun = current_fun
+            
+            # Coordinate descent with adaptive step size
+            for i in range(len(x)):
+                # Try both directions
+                for direction in [-1, 1]:
+                    step = learning_rate * direction
+                    
+                    # Apply bounds if specified
+                    if bounds and bounds[i]:
+                        low, high = bounds[i]
+                        new_val = x[i] + step
+                        if new_val < low or new_val > high:
+                            continue
+                    
+                    # Test the step
+                    x[i] += step
+                    new_fun = objective(x)
+                    
+                    if new_fun < current_fun:
+                        current_fun = new_fun
+                        break
+                    else:
+                        x[i] -= step  # Revert step
+            
+            # Check for convergence
+            if abs(old_fun - current_fun) < tolerance:
+                break
+            
+            # Adaptive learning rate
+            if current_fun < old_fun:
+                learning_rate *= 1.01  # Increase if improving
+            else:
+                learning_rate *= 0.99  # Decrease if not improving
+        
+        # Keep best result across restarts
+        if current_fun < best_fun:
+            best_fun = current_fun
+            best_x = x.copy()
+    
+    return OptimizationResult(best_x, best_fun)
 
 
 class RatingsSolver:
@@ -42,7 +117,6 @@ class RatingsSolver:
 
         result = minimize(objective,
                           optimiser_ratings,
-                          method = 'L-BFGS-B',
                           bounds = optimiser_bounds,
                           options = {'maxiter': max_iterations})
         for i, team in enumerate(team_names):
@@ -68,7 +142,6 @@ class RatingsSolver:
 
         result = minimize(objective,
                           optimiser_params,
-                          method = 'L-BFGS-B',
                           bounds = optimiser_bounds,
                           options = {'maxiter': max_iterations})
         for i, team in enumerate(team_names):

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=6.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "or-model"
+dynamic = ["version", "dependencies"]
+description = "An outrights model"
+readme = "README.md"
+authors = [
+    {name = "jhw", email = "justin.worrall@gmail.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.6"
+
+[project.urls]
+Homepage = "https://github.com/jhw/or-model"
+
+[tool.setuptools]
+packages = ["model"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["model*"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools_scm]
