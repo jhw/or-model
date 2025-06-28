@@ -117,12 +117,19 @@ def minimize(objective, x0, bounds=None, options=None):
             # Reset if no improvement
             x[i] += delta
         
-        # Dynamic convergence check - stricter tolerance as we progress
-        # Early generations: allow more exploration, later generations: require precision
+        # Dynamic convergence check - never stop early if error is too high
         convergence_tolerance = 1e-8 if generation > max_iter * 0.5 else 1e-10
-        if abs(old_fun - best_fun) < convergence_tolerance and generation > 50:
-            logger.info(f"Converged at generation {generation + 1} (tolerance={convergence_tolerance})")
+        target_error = 0.05  # Never stop if error is above this threshold
+        
+        # Only allow convergence if error is acceptable AND we've run enough generations
+        if (abs(old_fun - best_fun) < convergence_tolerance and 
+            generation > max_iter * 0.3 and  # Must run at least 30% of max iterations
+            best_fun <= target_error):        # Error must be acceptable
+            logger.info(f"Converged at generation {generation + 1} with acceptable error {best_fun:.6f}")
             break
+        elif abs(old_fun - best_fun) < convergence_tolerance and best_fun > target_error:
+            logger.debug(f"Would converge at generation {generation + 1}, but error {best_fun:.6f} > {target_error}, continuing...")
+            # Don't break - keep optimizing
     
     logger.info(f"Optimization completed. Final objective value: {best_fun:.6f}")
     return OptimizationResult(x, best_fun)
