@@ -15,131 +15,107 @@ class OptimizationResult:
         self.success = success
 
 def minimize(objective, x0, bounds=None, options=None):
-    """Enhanced genetic algorithm with multi-start initialization and periodic exploration"""
+    """Parallel genetic algorithm with population-based optimization"""
     if options is None:
         options = {}
     
-    max_iter = options.get('maxiter', 100)
-    decay = options.get('decay', 1.0)
-    mutation_factor = options.get('mutation_factor', 0.08)  # Larger mutations to prevent premature convergence
-    n_random_starts = options.get('n_random_starts', 20)  # Number of random starting points
+    max_iter = options.get('maxiter', 50)  # Fewer generations since we run more candidates per generation
+    population_size = options.get('population_size', 8)  # Parallel candidates per generation
+    mutation_factor = options.get('mutation_factor', 0.1)
+    elite_ratio = options.get('elite_ratio', 0.2)  # Top 20% survive to next generation
     logger = logging.getLogger(__name__)
     
-    # Phase 1: Find best starting point from multiple random starts
-    logger.info(f"Testing {n_random_starts} random starting points to find best initialization")
+    n_params = len(x0)
+    n_elite = max(1, int(population_size * elite_ratio))
     
-    best_start_x = np.array(x0, dtype=float)
-    best_start_fun = objective(best_start_x)
+    logger.info(f"Starting parallel genetic algorithm: {max_iter} generations, {population_size} candidates per generation")
     
-    for start_idx in range(n_random_starts):
-        # Generate random starting point within bounds
+    # Initialize population - shape: (population_size, n_params)
+    population = []
+    
+    # First candidate: use league table-sorted initial guess (x0)
+    population.append(np.array(x0, dtype=float))
+    
+    # Remaining candidates: random within bounds
+    for _ in range(population_size - 1):
         if bounds:
-            random_x = np.array([np.random.uniform(low, high) for low, high in bounds])
+            candidate = np.array([np.random.uniform(low, high) for low, high in bounds])
         else:
-            # More diverse starting points
-            random_x = np.array(x0) + np.random.normal(0, 1.0, len(x0))
-            
-        random_fun = objective(random_x)
-        
-        if random_fun < best_start_fun:
-            best_start_fun = random_fun
-            best_start_x = random_x.copy()
-            logger.debug(f"New best start found at trial {start_idx + 1}: {random_fun:.6f}")
+            candidate = np.array(x0) + np.random.normal(0, 1.0, n_params)
+        population.append(candidate)
     
-    logger.info(f"Best starting point found with objective: {best_start_fun:.6f}")
+    population = np.array(population)
     
-    # Phase 2: Genetic algorithm optimization with periodic wide random exploration
-    x = best_start_x
-    best_fun = best_start_fun
-    exploration_interval = options.get('exploration_interval', 50)   # Wide random every N generations  
-    n_exploration_points = options.get('n_exploration_points', 10)  # Points to test during exploration
-    
-    logger.info(f"Starting genetic optimization with {max_iter} generations (wide random every {exploration_interval} generations)")
+    best_fitness = float('inf')
+    best_solution = None
     
     for generation in range(max_iter):
-        old_fun = best_fun
-        decay_factor = ((max_iter - generation) / max_iter) ** decay
+        # Evaluate all candidates in parallel
+        fitness_scores = np.array([objective(individual) for individual in population])
         
-        # Log progress every 50th generation for longer runs
-        if generation % 50 == 0 or generation == max_iter - 1:
-            logger.info(f"Generation {generation + 1}/{max_iter}: objective={best_fun:.6f}, decay={decay_factor:.4f}")
+        # Find best solution
+        best_idx = np.argmin(fitness_scores)
+        if fitness_scores[best_idx] < best_fitness:
+            best_fitness = fitness_scores[best_idx]
+            best_solution = population[best_idx].copy()
         
-        # Periodic wide random exploration to escape local optima
-        if generation > 0 and generation % exploration_interval == 0:
-            logger.info(f"Wide random exploration at generation {generation + 1} (testing {n_exploration_points} points)")
-            exploration_best_x = x.copy()
-            exploration_best_fun = best_fun
-            
-            for explore_idx in range(n_exploration_points):
-                # Generate diverse exploration point
-                if bounds:
-                    explore_x = np.array([np.random.uniform(low, high) for low, high in bounds])
-                else:
-                    explore_x = x + np.random.normal(0, 1.5, len(x))  # Large variance for exploration
-                
-                explore_fun = objective(explore_x)
-                if explore_fun < exploration_best_fun:
-                    exploration_best_x = explore_x.copy()
-                    exploration_best_fun = explore_fun
-                    logger.debug(f"Better point found during exploration: {explore_fun:.6f}")
-            
-            # Use exploration result if it's better
-            if exploration_best_fun < best_fun:
-                x = exploration_best_x
-                best_fun = exploration_best_fun
-                logger.info(f"Jumped to better solution from exploration: {best_fun:.6f}")
+        # Log progress
+        if generation % 10 == 0 or generation == max_iter - 1:
+            avg_fitness = np.mean(fitness_scores)
+            time_remaining = (max_iter - generation) / max_iter
+            current_mutation = mutation_factor * (time_remaining ** 0.5)
+            logger.info(f"Generation {generation + 1}/{max_iter}: best={best_fitness:.6f}, avg={avg_fitness:.6f}, mutation={current_mutation:.4f}")
         
-        # Regular genetic mutations
-        for i in range(len(x)):
-            delta = random.gauss(0, 1) * decay_factor * mutation_factor
-            
-            # Try positive mutation
-            x[i] += delta
-            if bounds and bounds[i]:
-                low, high = bounds[i]
-                x[i] = max(low, min(high, x[i]))  # Clamp to bounds
-            
-            new_fun = objective(x)
-            if new_fun < best_fun:
-                best_fun = new_fun
-                continue
-            
-            # Try negative mutation
-            x[i] -= 2 * delta
-            if bounds and bounds[i]:
-                low, high = bounds[i]
-                x[i] = max(low, min(high, x[i]))  # Clamp to bounds
-            
-            new_fun = objective(x)
-            if new_fun < best_fun:
-                best_fun = new_fun
-                continue
-            
-            # Reset if no improvement
-            x[i] += delta
+        # Check convergence
+        excellent_error = options.get('excellent_error', 0.03)
+        max_error = options.get('max_error', 0.05)
         
-        # Two-tier convergence strategy (configurable parameters)
-        excellent_error = options.get('excellent_error', 0.03)  # Can exit immediately if this good
-        max_error = options.get('max_error', 0.05)              # Never exit if above this threshold
-        
-        # Immediate exit if excellent result achieved
-        if best_fun <= excellent_error:
-            logger.info(f"Excellent result achieved at generation {generation + 1}: error {best_fun:.6f} ≤ {excellent_error}")
+        if best_fitness <= excellent_error:
+            logger.info(f"Excellent result achieved at generation {generation + 1}: error {best_fitness:.6f} ≤ {excellent_error}")
             break
+            
+        if best_fitness > max_error and generation == max_iter - 1:
+            logger.warning(f"Max generations reached with error {best_fitness:.6f} > {max_error}")
         
-        # Never exit if error too high (force continued optimization)
-        if best_fun > max_error:
-            continue  # Keep optimizing, don't check other convergence conditions
+        # Selection: keep elite performers
+        elite_indices = np.argsort(fitness_scores)[:n_elite]
+        elite_population = population[elite_indices]
         
-        # In the middle range (0.03-0.05): use standard convergence logic
-        convergence_tolerance = 1e-8 if generation > max_iter * 0.5 else 1e-10
-        if (abs(old_fun - best_fun) < convergence_tolerance and 
-            generation > max_iter * 0.3):  # Must run at least 30% of max iterations
-            logger.info(f"Converged at generation {generation + 1} with acceptable error {best_fun:.6f}")
-            break
+        # Generate new population
+        new_population = []
+        
+        # Keep elite unchanged
+        for i in range(n_elite):
+            new_population.append(elite_population[i].copy())
+        
+        # Calculate decay factor for this generation
+        time_remaining = (max_iter - generation) / max_iter  # Goes from 1.0 to 0.0
+        decay_factor = time_remaining ** 0.5  # Square root decay
+        current_mutation_factor = mutation_factor * decay_factor
+        
+        # Generate offspring from elite
+        while len(new_population) < population_size:
+            # Select random elite parent
+            parent_idx = np.random.randint(0, n_elite)
+            parent = elite_population[parent_idx].copy()
+            
+            # Apply mutations with decay
+            for i in range(n_params):
+                if np.random.random() < 0.3:  # 30% mutation probability per parameter
+                    mutation = np.random.normal(0, current_mutation_factor)
+                    parent[i] += mutation
+                    
+                    # Clamp to bounds
+                    if bounds and bounds[i]:
+                        low, high = bounds[i]
+                        parent[i] = max(low, min(high, parent[i]))
+            
+            new_population.append(parent)
+        
+        population = np.array(new_population)
     
-    logger.info(f"Optimization completed. Final objective value: {best_fun:.6f}")
-    return OptimizationResult(x, best_fun)
+    logger.info(f"Parallel optimization completed. Final objective value: {best_fitness:.6f}")
+    return OptimizationResult(best_solution, best_fitness)
 
 
 class RatingsSolver:
@@ -184,6 +160,7 @@ class RatingsSolver:
         return [prob / overround for prob in probs]
     
     def calc_error(self, events, ratings, home_advantage):
+        """Calculate RMS error for single ratings configuration"""
         matrices = [ScoreMatrix.initialise(event_name = event["name"],
                                            ratings = ratings,
                                            home_advantage = home_advantage)
