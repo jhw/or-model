@@ -34,11 +34,11 @@ if __name__ == "__main__":
         file_name = f"fixtures/{league_name}.json"
         if not os.path.exists(file_name):
             raise RuntimeError(f"{file_name} does not exist")
-        results = json.loads(open(file_name).read())
-        team_names = filter_team_names(results)
+        events = json.loads(open(file_name).read())
+        team_names = filter_team_names(events)
         ratings = {team_name: random.uniform(*RatingRange)
                    for team_name in team_names}
-        training_set = sorted(results,
+        training_set = sorted(events,
                               key = lambda x: x["date"])[-3*len(team_names):]
         winner_payoff = f"1|{len(team_names)-1}x0"
         markets = [{"name": "Winner",
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         rounds = 2 if "SCO" in league_name else 1
         resp = simulate(ratings = ratings,
                         training_set = training_set,
-                        results = results,
+                        events = events,
                         handicaps = {},
                         markets = markets,
                         rounds = rounds)

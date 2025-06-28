@@ -68,10 +68,10 @@ def calc_points_per_game_ratings(team_names, ratings, home_advantage):
     return {team_name:ppg_value / n_games
             for team_name, ppg_value in ppg_ratings.items()}
 
-def calc_expected_season_points(team_names, results, handicaps, remaining_fixtures, ratings, home_advantage):
+def calc_expected_season_points(team_names, events, handicaps, remaining_fixtures, ratings, home_advantage):
     exp_points = {team["name"]: team["points"]
                   for team in calc_league_table(team_names = team_names,
-                                                results = results,
+                                                events = events,
                                                 handicaps = handicaps)}
     for event_name in remaining_fixtures:
         home_team_name, away_team_name = event_name.split(" vs ")
@@ -111,23 +111,23 @@ def simulate(ratings,
              training_set,
              max_iterations = 500,
              n_paths = 1000,
-             results = [],
+             events = [],
              handicaps = {},
              markets = [],
              rounds = 1):
     team_names = sorted(list(ratings.keys()))
     init_markets(team_names, markets)
     league_table = calc_league_table(team_names = team_names,
-                                     results = results,
+                                     events = events,
                                      handicaps = handicaps)
     remaining_fixtures = calc_remaining_fixtures(team_names = team_names,
-                                                 results = results,
+                                                 events = events,
                                                  rounds = rounds)
     solver = RatingsSolver()
     solver_resp = solver.solve(ratings = ratings,
                                events = training_set,
                                max_iterations = max_iterations,
-                               results = results)
+                               results = events)
     poisson_ratings = solver_resp["ratings"]
     home_advantage = solver_resp["home_advantage"]
     solver_error = solver_resp["error"]
@@ -143,7 +143,7 @@ def simulate(ratings,
                                            ratings = poisson_ratings,
                                            home_advantage = home_advantage)
     season_points = calc_expected_season_points(team_names = team_names,
-                                                results = results,
+                                                events = events,
                                                 handicaps = handicaps,
                                                 remaining_fixtures = remaining_fixtures,
                                                 ratings = poisson_ratings,

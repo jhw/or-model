@@ -7,14 +7,14 @@ class StateTest(unittest.TestCase):
     def test_league_table(self):
 
         team_names = ["A", "B", "C"]        
-        results = [{"name": "A vs B",
-                    "score": (1, 0)},
-                   {"name": "B vs C",
-                    "score": (2, 2)},
-                   {"name": "A vs C",
-                    "score": (1, 2)}]
+        events = [{"name": "A vs B",
+                   "score": (1, 0)},
+                  {"name": "B vs C",
+                   "score": (2, 2)},
+                  {"name": "A vs C",
+                   "score": (1, 2)}]
         table = {team["name"]: team for team in calc_league_table(team_names = team_names,
-                                                                  results = results,
+                                                                  events = events,
                                                                   handicaps = {})}
         for team_name, points, goal_difference, played in [("A", 3, 0, 2),
                                                            ("B", 1, -1, 2),
@@ -26,12 +26,12 @@ class StateTest(unittest.TestCase):
     def test_remaining_fixtures(self):
         from model.state import calc_remaining_fixtures
         team_names = ["A", "B", "C"]        
-        results = [{"name": "A vs B",
-                    "score": (1, 0)},
-                   {"name": "B vs C",
-                    "score": (2, 2)}]
+        events = [{"name": "A vs B",
+                   "score": (1, 0)},
+                  {"name": "B vs C",
+                   "score": (2, 2)}]
         remaining_fixtures = calc_remaining_fixtures(team_names = team_names,
-                                                     results = results)
+                                                     events = events)
         event_names = ['A vs C', 'B vs A', 'C vs A', 'C vs B']
         for event_name in event_names:
             self.assertTrue(event_name in remaining_fixtures)

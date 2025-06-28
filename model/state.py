@@ -1,13 +1,15 @@
-def calc_league_table(team_names, results, handicaps):
+def calc_league_table(team_names, events, handicaps):
     # Initialize league table with team names
     league_table = {team_name: {'name': team_name,
                                 'played': 0,
                                 'points': handicaps[team_name] if team_name in handicaps else 0,
                                 'goal_difference': 0} for team_name in team_names}
 
-    for result in results:
-        home_team, away_team = result['name'].split(' vs ')
-        home_score, away_score = result['score']
+    for event in events:
+        home_team, away_team = event['name'].split(' vs ')
+        if 'score' not in event:
+            continue
+        home_score, away_score = event['score']
 
         # Update games played
         league_table[home_team]['played'] += 1
@@ -32,14 +34,19 @@ def calc_league_table(team_names, results, handicaps):
 
     return league_table_list
 
-def calc_remaining_fixtures(team_names, results, rounds = 1):
+def filter_results_from_events(events):
+    """Helper function to filter events that have scores (i.e., completed matches)"""
+    return [event for event in events if 'score' in event]
+
+def calc_remaining_fixtures(team_names, events, rounds = 1):
     counts={}
     for home_team_name in team_names:
         for away_team_name in team_names:
             if home_team_name != away_team_name:    
                 counts[f"{home_team_name} vs {away_team_name}"] = rounds
-    for result in results:
-        counts[result["name"]]-=1
+    for event in events:
+        if 'score' in event:
+            counts[event["name"]]-=1
     event_names = []
     for event_name, n in counts.items():
         for i in range(n):

@@ -123,14 +123,14 @@ class RatingsSolver:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
     
-    def initialize_ratings_from_league_table(self, team_names, results, rating_range=(0, 6)):
+    def initialize_ratings_from_league_table(self, team_names, events, rating_range=(0, 6)):
         """Initialize team ratings based on league table points using existing calc_league_table"""
         # Use existing league table calculation
-        league_table = calc_league_table(team_names, results, handicaps={})
+        league_table = calc_league_table(team_names, events, handicaps={})
         
         # If no results available, use random initialization
         if not league_table or all(team['points'] == 0 for team in league_table):
-            self.logger.info("No match results found, using random initialization")
+            self.logger.info("No match events found, using random initialization")
             return {team: random.uniform(*rating_range) for team in team_names}
         
         # Map league position to rating range
