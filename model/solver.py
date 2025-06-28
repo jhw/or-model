@@ -47,11 +47,13 @@ def minimize_fast(objective, x0, bounds=None, options=None):
     
     logger.info(f"Best starting point found with objective: {best_start_fun:.6f}")
     
-    # Phase 2: Genetic algorithm optimization from best starting point
+    # Phase 2: Genetic algorithm optimization with periodic wide random exploration
     x = best_start_x
     best_fun = best_start_fun
+    exploration_interval = options.get('exploration_interval', 100)  # Wide random every N generations
+    n_exploration_points = options.get('n_exploration_points', 15)  # Points to test during exploration
     
-    logger.info(f"Starting genetic optimization with {max_iter} generations from best starting point")
+    logger.info(f"Starting genetic optimization with {max_iter} generations (wide random every {exploration_interval} generations)")
     
     for generation in range(max_iter):
         old_fun = best_fun
@@ -61,7 +63,32 @@ def minimize_fast(objective, x0, bounds=None, options=None):
         if generation % 50 == 0 or generation == max_iter - 1:
             logger.info(f"Generation {generation + 1}/{max_iter}: objective={best_fun:.6f}, decay={decay_factor:.4f}")
         
-        # Mutate each parameter
+        # Periodic wide random exploration to escape local optima
+        if generation > 0 and generation % exploration_interval == 0:
+            logger.info(f"Wide random exploration at generation {generation + 1} (testing {n_exploration_points} points)")
+            exploration_best_x = x.copy()
+            exploration_best_fun = best_fun
+            
+            for explore_idx in range(n_exploration_points):
+                # Generate diverse exploration point
+                if bounds:
+                    explore_x = np.array([np.random.uniform(low, high) for low, high in bounds])
+                else:
+                    explore_x = x + np.random.normal(0, 1.5, len(x))  # Large variance for exploration
+                
+                explore_fun = objective(explore_x)
+                if explore_fun < exploration_best_fun:
+                    exploration_best_x = explore_x.copy()
+                    exploration_best_fun = explore_fun
+                    logger.debug(f"Better point found during exploration: {explore_fun:.6f}")
+            
+            # Use exploration result if it's better
+            if exploration_best_fun < best_fun:
+                x = exploration_best_x
+                best_fun = exploration_best_fun
+                logger.info(f"Jumped to better solution from exploration: {best_fun:.6f}")
+        
+        # Regular genetic mutations
         for i in range(len(x)):
             delta = random.gauss(0, 1) * decay_factor * mutation_factor
             
