@@ -50,8 +50,8 @@ def minimize(objective, x0, bounds=None, options=None):
     # Phase 2: Genetic algorithm optimization with periodic wide random exploration
     x = best_start_x
     best_fun = best_start_fun
-    exploration_interval = options.get('exploration_interval', 100)  # Wide random every N generations
-    n_exploration_points = options.get('n_exploration_points', 15)  # Points to test during exploration
+    exploration_interval = options.get('exploration_interval', 50)   # Wide random every N generations  
+    n_exploration_points = options.get('n_exploration_points', 20)  # Points to test during exploration
     
     logger.info(f"Starting genetic optimization with {max_iter} generations (wide random every {exploration_interval} generations)")
     
@@ -149,7 +149,7 @@ class RatingsSolver:
                   for event, matrix in zip(events, matrices)]
         return np.mean(errors)
 
-    def optimise_ratings(self, events, ratings, home_advantage, max_iterations,
+    def optimise_ratings(self, events, ratings, home_advantage, options,
                          rating_range = RatingRange):
         self.logger.info(f"Starting ratings optimization for {len(ratings)} teams with fixed home advantage {home_advantage}")
         
@@ -167,13 +167,13 @@ class RatingsSolver:
         result = minimize(objective,
                          optimiser_ratings,
                          bounds = optimiser_bounds,
-                         options = {'maxiter': max_iterations})
+                         options = options)
         
         for i, team in enumerate(team_names):
             ratings[team] = result.x[i]
         self.logger.info(f"Ratings optimization completed with final error: {result.fun:.6f}")
 
-    def optimise_ratings_and_bias(self, events, ratings, max_iterations,
+    def optimise_ratings_and_bias(self, events, ratings, options,
                                   rating_range = RatingRange,
                                   bias_range = HomeAdvantageRange):
         self.logger.info(f"Starting joint optimization of {len(ratings)} team ratings and home advantage")
@@ -195,7 +195,7 @@ class RatingsSolver:
         result = minimize(objective,
                          optimiser_params,
                          bounds = optimiser_bounds,
-                         options = {'maxiter': max_iterations})
+                         options = options)
         
         for i, team in enumerate(team_names):
             ratings[team] = result.x[i]
@@ -205,18 +205,26 @@ class RatingsSolver:
 
     def solve(self, events, ratings,
               home_advantage = None,
-              max_iterations = 500):
+              max_iterations = 500,
+              exploration_interval = 50,
+              n_exploration_points = 20):
         self.logger.info(f"Starting solver with {len(events)} events, max_iterations={max_iterations}")
+        
+        optimization_options = {
+            'maxiter': max_iterations,
+            'exploration_interval': exploration_interval,
+            'n_exploration_points': n_exploration_points
+        }
         
         if home_advantage:
             self.optimise_ratings(events = events,
                                   ratings = ratings,
                                   home_advantage = home_advantage,
-                                  max_iterations = max_iterations)
+                                  options = optimization_options)
         else:
             home_advantage = self.optimise_ratings_and_bias(events = events,
                                                             ratings = ratings,
-                                                            max_iterations = max_iterations)
+                                                            options = optimization_options)
         error = self.calc_error(events = events,
                                 ratings = ratings,
                                 home_advantage = home_advantage)
