@@ -1,4 +1,5 @@
 from model.kernel import ScoreMatrix
+from model.state import calc_league_table
 import numpy as np
 import math
 import logging
@@ -51,7 +52,7 @@ def minimize(objective, x0, bounds=None, options=None):
     x = best_start_x
     best_fun = best_start_fun
     exploration_interval = options.get('exploration_interval', 50)   # Wide random every N generations  
-    n_exploration_points = options.get('n_exploration_points', 20)  # Points to test during exploration
+    n_exploration_points = options.get('n_exploration_points', 10)  # Points to test during exploration
     
     logger.info(f"Starting genetic optimization with {max_iter} generations (wide random every {exploration_interval} generations)")
     
@@ -148,6 +149,32 @@ class RatingsSolver:
         self.market_selector = market_selector
         self.logger = logging.getLogger(__name__)
     
+    def initialize_ratings_from_league_table(self, team_names, results, rating_range=(0, 6)):
+        """Initialize team ratings based on league table points using existing calc_league_table"""
+        # Use existing league table calculation
+        league_table = calc_league_table(team_names, results, handicaps={})
+        
+        # If no results available, use random initialization
+        if not league_table or all(team['points'] == 0 for team in league_table):
+            self.logger.info("No match results found, using random initialization")
+            return {team: random.uniform(*rating_range) for team in team_names}
+        
+        # Map league position to rating range
+        min_rating, max_rating = rating_range
+        rating_span = max_rating - min_rating
+        
+        # Distribute ratings based on league position (already sorted by points + goal difference)
+        ratings = {}
+        for i, team_data in enumerate(league_table):
+            # Linear mapping: best team gets max rating, worst gets min rating
+            position_ratio = i / (len(league_table) - 1) if len(league_table) > 1 else 0
+            rating = max_rating - (position_ratio * rating_span)
+            ratings[team_data['name']] = rating
+            
+        top_team = league_table[0]
+        self.logger.info(f"Initialized ratings from league table: {top_team['name']} ({top_team['points']} pts) = {ratings[top_team['name']]:.2f}")
+        return ratings
+    
     def rms_error(self, X, Y):
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
 
@@ -220,10 +247,18 @@ class RatingsSolver:
               home_advantage = None,
               max_iterations = 500,
               exploration_interval = 50,
-              n_exploration_points = 20,
+              n_exploration_points = 10,
               excellent_error = 0.03,
-              max_error = 0.05):
+              max_error = 0.05,
+              use_league_table_init = True,
+              results = []):
         self.logger.info(f"Starting solver with {len(events)} events, max_iterations={max_iterations}")
+        
+        # Optionally initialize ratings from league table instead of using provided ratings
+        if use_league_table_init and results:
+            team_names = sorted(list(ratings.keys()))
+            league_table_ratings = self.initialize_ratings_from_league_table(team_names, results)
+            ratings.update(league_table_ratings)  # Update the provided ratings dict
         
         optimization_options = {
             'maxiter': max_iterations,

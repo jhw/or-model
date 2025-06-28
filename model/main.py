@@ -129,7 +129,8 @@ def simulate(ratings,
                            market_selector = market_selector)
     solver_resp = solver.solve(ratings = ratings,
                                events = training_set,
-                               max_iterations = max_iterations)
+                               max_iterations = max_iterations,
+                               results = results)
     poisson_ratings = solver_resp["ratings"]
     home_advantage = solver_resp["home_advantage"]
     solver_error = solver_resp["error"]
