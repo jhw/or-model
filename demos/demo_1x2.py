@@ -2,6 +2,7 @@ from model.solver import RatingRange
 from model.main import simulate
 
 import json
+import logging
 import os
 import random
 import re
@@ -21,6 +22,13 @@ def filter_1x2_probabilities(event):
     return [prob / overround for prob in probs]
 
 if __name__ == "__main__":
+    # Configure logging to show solver iterations
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%H:%M:%S'
+    )
+    
     try:
         if len(sys.argv) < 2:
             raise RuntimeError("please enter league")

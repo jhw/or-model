@@ -1,6 +1,7 @@
 from model.kernel import ScoreMatrix
 import numpy as np
 import math
+import logging
 
 RatingRange = (0, 6)
 HomeAdvantageRange = (1, 1.5)
@@ -19,6 +20,7 @@ def minimize(objective, x0, bounds=None, options=None):
     max_iter = options.get('maxiter', 100)
     learning_rate = 0.01
     tolerance = 1e-6
+    logger = logging.getLogger(__name__)
     
     x = np.array(x0, dtype=float)
     best_x = x.copy()
@@ -26,6 +28,7 @@ def minimize(objective, x0, bounds=None, options=None):
     
     # Multiple random restarts for better global optimization
     for restart in range(3):
+        logger.info(f"Starting optimization restart {restart + 1}/3")
         if restart > 0:
             # Random restart within bounds
             if bounds:
@@ -36,9 +39,14 @@ def minimize(objective, x0, bounds=None, options=None):
                 x = np.array(x0) + np.random.normal(0, 0.1, len(x0))
         
         current_fun = objective(x)
+        logger.debug(f"Restart {restart + 1} initial objective value: {current_fun:.6f}")
         
         for iteration in range(max_iter):
             old_fun = current_fun
+            
+            # Log every 10th iteration or first/last iterations
+            if iteration % 10 == 0 or iteration == max_iter - 1:
+                logger.info(f"Restart {restart + 1} iteration {iteration + 1}/{max_iter}: objective={current_fun:.6f}, lr={learning_rate:.6f}")
             
             # Coordinate descent with adaptive step size
             for i in range(len(x)):
@@ -65,6 +73,7 @@ def minimize(objective, x0, bounds=None, options=None):
             
             # Check for convergence
             if abs(old_fun - current_fun) < tolerance:
+                logger.info(f"Restart {restart + 1} converged at iteration {iteration + 1} (tolerance={tolerance})")
                 break
             
             # Adaptive learning rate
@@ -77,7 +86,9 @@ def minimize(objective, x0, bounds=None, options=None):
         if current_fun < best_fun:
             best_fun = current_fun
             best_x = x.copy()
+            logger.debug(f"New best result from restart {restart + 1}: {best_fun:.6f}")
     
+    logger.info(f"Optimization completed. Best objective value: {best_fun:.6f}")
     return OptimizationResult(best_x, best_fun)
 
 
@@ -86,6 +97,7 @@ class RatingsSolver:
     def __init__(self, model_selector, market_selector):
         self.model_selector = model_selector
         self.market_selector = market_selector
+        self.logger = logging.getLogger(__name__)
     
     def rms_error(self, X, Y):
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
@@ -103,6 +115,7 @@ class RatingsSolver:
 
     def optimise_ratings(self, events, ratings, home_advantage, max_iterations,
                          rating_range = RatingRange):
+        self.logger.info(f"Starting ratings optimization for {len(ratings)} teams with fixed home advantage {home_advantage}")
         team_names = sorted(list(ratings.keys()))
         
         optimiser_ratings = [ratings[team_name] for team_name in team_names]
@@ -121,10 +134,12 @@ class RatingsSolver:
                           options = {'maxiter': max_iterations})
         for i, team in enumerate(team_names):
             ratings[team] = result.x[i]
+        self.logger.info(f"Ratings optimization completed with final error: {result.fun:.6f}")
 
     def optimise_ratings_and_bias(self, events, ratings, max_iterations,
                                   rating_range = RatingRange,
                                   bias_range = HomeAdvantageRange):
+        self.logger.info(f"Starting joint optimization of {len(ratings)} team ratings and home advantage")
         team_names = sorted(list(ratings.keys()))
 
         optimiser_ratings = [ratings[team_name] for team_name in team_names]
@@ -146,11 +161,15 @@ class RatingsSolver:
                           options = {'maxiter': max_iterations})
         for i, team in enumerate(team_names):
             ratings[team] = result.x[i]
-        return result.x[-1]        
+        home_advantage = result.x[-1]
+        self.logger.info(f"Joint optimization completed with final error: {result.fun:.6f}, home advantage: {home_advantage:.6f}")
+        return home_advantage        
 
     def solve(self, events, ratings,
               home_advantage = None,
               max_iterations = 100):
+        self.logger.info(f"Starting solver with {len(events)} events, max_iterations={max_iterations}")
+        
         if home_advantage:
             self.optimise_ratings(events = events,
                                   ratings = ratings,
@@ -163,6 +182,8 @@ class RatingsSolver:
         error = self.calc_error(events = events,
                                 ratings = ratings,
                                 home_advantage = home_advantage)
+        
+        self.logger.info(f"Solver completed with final error: {error:.6f}")
         return {"ratings": {k: float(v) for k, v in ratings.items()},
                 "home_advantage": float(home_advantage),
                 "error": float(error)}
