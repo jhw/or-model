@@ -14,20 +14,44 @@ class OptimizationResult:
         self.success = success
 
 def minimize_fast(objective, x0, bounds=None, options=None):
-    """Fast genetic algorithm optimization with mutations - based on original v0.0.1 solver"""
+    """Fast genetic algorithm optimization with mutations and multi-start"""
     if options is None:
         options = {}
     
     max_iter = options.get('maxiter', 100)
-    decay = options.get('decay', 1.0)  # Less aggressive decay
-    mutation_factor = options.get('mutation_factor', 0.05)  # Smaller mutations for longer convergence
+    decay = options.get('decay', 1.0)
+    mutation_factor = options.get('mutation_factor', 0.08)  # Larger mutations to prevent premature convergence
+    n_random_starts = options.get('n_random_starts', 20)  # Number of random starting points
     logger = logging.getLogger(__name__)
     
-    x = np.array(x0, dtype=float)
-    best_fun = objective(x)
+    # Phase 1: Find best starting point from multiple random starts
+    logger.info(f"Testing {n_random_starts} random starting points to find best initialization")
     
-    logger.info(f"Starting fast genetic optimization with {max_iter} generations")
-    logger.debug(f"Initial objective value: {best_fun:.6f}")
+    best_start_x = np.array(x0, dtype=float)
+    best_start_fun = objective(best_start_x)
+    
+    for start_idx in range(n_random_starts):
+        # Generate random starting point within bounds
+        if bounds:
+            random_x = np.array([np.random.uniform(low, high) for low, high in bounds])
+        else:
+            # More diverse starting points
+            random_x = np.array(x0) + np.random.normal(0, 1.0, len(x0))
+            
+        random_fun = objective(random_x)
+        
+        if random_fun < best_start_fun:
+            best_start_fun = random_fun
+            best_start_x = random_x.copy()
+            logger.debug(f"New best start found at trial {start_idx + 1}: {random_fun:.6f}")
+    
+    logger.info(f"Best starting point found with objective: {best_start_fun:.6f}")
+    
+    # Phase 2: Genetic algorithm optimization from best starting point
+    x = best_start_x
+    best_fun = best_start_fun
+    
+    logger.info(f"Starting genetic optimization with {max_iter} generations from best starting point")
     
     for generation in range(max_iter):
         old_fun = best_fun
@@ -75,16 +99,17 @@ def minimize_fast(objective, x0, bounds=None, options=None):
     return OptimizationResult(x, best_fun)
 
 def minimize_hybrid(objective, x0, bounds=None, options=None):
-    """Hybrid approach: fast genetic for coarse optimization, then coordinate descent for fine-tuning"""
+    """Hybrid approach: multi-start + genetic for coarse optimization, then coordinate descent for fine-tuning"""
     if options is None:
         options = {}
     
     max_iter = options.get('maxiter', 100)
+    n_random_starts = options.get('n_random_starts', 20)
     logger = logging.getLogger(__name__)
     
-    # Phase 1: Fast genetic algorithm (80% of iterations)
+    # Phase 1: Fast genetic algorithm with multi-start (80% of iterations)
     genetic_iter = int(max_iter * 0.8)
-    genetic_options = {'maxiter': genetic_iter, 'decay': 2.0, 'mutation_factor': 0.1}
+    genetic_options = {'maxiter': genetic_iter, 'decay': 1.0, 'mutation_factor': 0.05, 'n_random_starts': n_random_starts}
     result1 = minimize_fast(objective, x0, bounds, genetic_options)
     
     # Phase 2: Coordinate descent for fine-tuning (20% of iterations)
