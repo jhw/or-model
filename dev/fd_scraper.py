@@ -44,30 +44,6 @@ def filter_events(reader):
             if len(prices) == 3:
                 return {"prices": prices}
         return None
-    def filter_asian_handicaps(item):
-        prices = []
-        for attr in ["PAHH", "PAHA"]:
-            if (attr in item and
-                item[attr] != ''):
-                prices.append(float(item[attr]))
-        line = float(item["AHh"]) if "AHh" in item else None
-        if (len(prices) == 2 and
-            line != None):                
-            return {"prices": prices,
-                    "line": line}
-        else:
-            return None
-    def filter_over_under_goals(item, line = 2.5):
-        prices = []
-        for attr in [f"P>{line}", f"P<{line}"]:
-            if (attr in item and
-                item[attr] != ''):
-                prices.append(float(item[attr]))
-        if len(prices) == 2:
-            return {"prices": prices,
-                    "line": line}
-        else:
-            return None
     titles = next(reader)
     rows = [{title: clean_text(value)
              for title, value in zip(titles, row)}
@@ -77,8 +53,7 @@ def filter_events(reader):
                           "name": filter_name(row),
                           "score": filter_score(row),
                           "match_odds": filter_match_odds(row),
-                          "asian_handicaps": filter_asian_handicaps(row),
-                          "over_under_goals": filter_over_under_goals(row)}
+}
                          for row in rows]]
 
 def parse_csv(text):

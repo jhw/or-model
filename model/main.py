@@ -109,8 +109,6 @@ def calc_outright_marks(position_probabilities, markets):
 
 def simulate(ratings,
              training_set,
-             model_selector,
-             market_selector,
              max_iterations = 500,
              n_paths = 1000,
              results = [],
@@ -125,8 +123,7 @@ def simulate(ratings,
     remaining_fixtures = calc_remaining_fixtures(team_names = team_names,
                                                  results = results,
                                                  rounds = rounds)
-    solver = RatingsSolver(model_selector = model_selector,
-                           market_selector = market_selector)
+    solver = RatingsSolver()
     solver_resp = solver.solve(ratings = ratings,
                                events = training_set,
                                max_iterations = max_iterations,

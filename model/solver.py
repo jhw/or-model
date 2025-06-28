@@ -144,9 +144,7 @@ def minimize(objective, x0, bounds=None, options=None):
 
 class RatingsSolver:
 
-    def __init__(self, model_selector, market_selector):
-        self.model_selector = model_selector
-        self.market_selector = market_selector
+    def __init__(self):
         self.logger = logging.getLogger(__name__)
     
     def initialize_ratings_from_league_table(self, team_names, results, rating_range=(0, 6)):
@@ -178,14 +176,20 @@ class RatingsSolver:
     def rms_error(self, X, Y):
         return np.sqrt(np.mean((np.array(X) - np.array(Y)) ** 2))
 
+    def extract_market_probabilities(self, event):
+        """Extract normalized probabilities from match odds prices"""
+        prices = event["match_odds"]["prices"]
+        probs = [1 / price for price in prices]
+        overround = sum(probs)
+        return [prob / overround for prob in probs]
+    
     def calc_error(self, events, ratings, home_advantage):
         matrices = [ScoreMatrix.initialise(event_name = event["name"],
                                            ratings = ratings,
                                            home_advantage = home_advantage)
                     for event in events]        
-        errors = [self.rms_error(self.model_selector(event = event,
-                                                     matrix = matrix),
-                                 self.market_selector(event))
+        errors = [self.rms_error(matrix.match_odds,
+                                 self.extract_market_probabilities(event))
                   for event, matrix in zip(events, matrices)]
         return np.mean(errors)
 
