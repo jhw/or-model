@@ -117,19 +117,25 @@ def minimize(objective, x0, bounds=None, options=None):
             # Reset if no improvement
             x[i] += delta
         
-        # Dynamic convergence check - never stop early if error is too high
-        convergence_tolerance = 1e-8 if generation > max_iter * 0.5 else 1e-10
-        target_error = 0.05  # Never stop if error is above this threshold
+        # Two-tier convergence strategy (configurable parameters)
+        excellent_error = options.get('excellent_error', 0.03)  # Can exit immediately if this good
+        max_error = options.get('max_error', 0.05)              # Never exit if above this threshold
         
-        # Only allow convergence if error is acceptable AND we've run enough generations
+        # Immediate exit if excellent result achieved
+        if best_fun <= excellent_error:
+            logger.info(f"Excellent result achieved at generation {generation + 1}: error {best_fun:.6f} ≤ {excellent_error}")
+            break
+        
+        # Never exit if error too high (force continued optimization)
+        if best_fun > max_error:
+            continue  # Keep optimizing, don't check other convergence conditions
+        
+        # In the middle range (0.03-0.05): use standard convergence logic
+        convergence_tolerance = 1e-8 if generation > max_iter * 0.5 else 1e-10
         if (abs(old_fun - best_fun) < convergence_tolerance and 
-            generation > max_iter * 0.3 and  # Must run at least 30% of max iterations
-            best_fun <= target_error):        # Error must be acceptable
+            generation > max_iter * 0.3):  # Must run at least 30% of max iterations
             logger.info(f"Converged at generation {generation + 1} with acceptable error {best_fun:.6f}")
             break
-        elif abs(old_fun - best_fun) < convergence_tolerance and best_fun > target_error:
-            logger.debug(f"Would converge at generation {generation + 1}, but error {best_fun:.6f} > {target_error}, continuing...")
-            # Don't break - keep optimizing
     
     logger.info(f"Optimization completed. Final objective value: {best_fun:.6f}")
     return OptimizationResult(x, best_fun)
@@ -214,13 +220,17 @@ class RatingsSolver:
               home_advantage = None,
               max_iterations = 500,
               exploration_interval = 50,
-              n_exploration_points = 20):
+              n_exploration_points = 20,
+              excellent_error = 0.03,
+              max_error = 0.05):
         self.logger.info(f"Starting solver with {len(events)} events, max_iterations={max_iterations}")
         
         optimization_options = {
             'maxiter': max_iterations,
             'exploration_interval': exploration_interval,
-            'n_exploration_points': n_exploration_points
+            'n_exploration_points': n_exploration_points,
+            'excellent_error': excellent_error,
+            'max_error': max_error
         }
         
         if home_advantage:
