@@ -19,10 +19,10 @@ def minimize(objective, x0, bounds=None, options=None):
     if options is None:
         options = {}
     
-    max_iter = options.get('maxiter', 50)  # Fewer generations since we run more candidates per generation
-    population_size = options.get('population_size', 8)  # Parallel candidates per generation
-    mutation_factor = options.get('mutation_factor', 0.1)
-    elite_ratio = options.get('elite_ratio', 0.2)  # Top 20% survive to next generation
+    max_iter = options.get('maxiter')
+    population_size = options.get('population_size')
+    mutation_factor = options.get('mutation_factor')
+    elite_ratio = options.get('elite_ratio')
     logger = logging.getLogger(__name__)
     
     n_params = len(x0)
@@ -41,7 +41,8 @@ def minimize(objective, x0, bounds=None, options=None):
         if bounds:
             candidate = np.array([np.random.uniform(low, high) for low, high in bounds])
         else:
-            candidate = np.array(x0) + np.random.normal(0, 1.0, n_params)
+            init_std = options.get('init_std')
+            candidate = np.array(x0) + np.random.normal(0, init_std, n_params)
         population.append(candidate)
     
     population = np.array(population)
@@ -60,7 +61,8 @@ def minimize(objective, x0, bounds=None, options=None):
             best_solution = population[best_idx].copy()
         
         # Log progress
-        if generation % 10 == 0 or generation == max_iter - 1:
+        log_interval = options.get('log_interval')
+        if generation % log_interval == 0 or generation == max_iter - 1:
             avg_fitness = np.mean(fitness_scores)
             time_remaining = (max_iter - generation) / max_iter
             current_mutation = mutation_factor * (time_remaining ** 0.5)
@@ -90,7 +92,8 @@ def minimize(objective, x0, bounds=None, options=None):
         
         # Calculate decay factor for this generation
         time_remaining = (max_iter - generation) / max_iter  # Goes from 1.0 to 0.0
-        decay_factor = time_remaining ** 0.5  # Square root decay
+        decay_exponent = options.get('decay_exponent')
+        decay_factor = time_remaining ** decay_exponent
         current_mutation_factor = mutation_factor * decay_factor
         
         # Generate offspring from elite
@@ -100,8 +103,9 @@ def minimize(objective, x0, bounds=None, options=None):
             parent = elite_population[parent_idx].copy()
             
             # Apply mutations with decay
+            mutation_probability = options.get('mutation_probability')
             for i in range(n_params):
-                if np.random.random() < 0.3:  # 30% mutation probability per parameter
+                if np.random.random() < mutation_probability:
                     mutation = np.random.normal(0, current_mutation_factor)
                     parent[i] += mutation
                     
@@ -226,7 +230,14 @@ class RatingsSolver:
 
     def solve(self, events, ratings,
               home_advantage = None,
-              max_iterations = 500,
+              max_iterations = 50,
+              population_size = 8,
+              mutation_factor = 0.1,
+              elite_ratio = 0.2,
+              init_std = 1.0,
+              log_interval = 10,
+              decay_exponent = 0.5,
+              mutation_probability = 0.3,
               exploration_interval = 50,
               n_exploration_points = 10,
               excellent_error = 0.03,
@@ -243,6 +254,13 @@ class RatingsSolver:
         
         optimization_options = {
             'maxiter': max_iterations,
+            'population_size': population_size,
+            'mutation_factor': mutation_factor,
+            'elite_ratio': elite_ratio,
+            'init_std': init_std,
+            'log_interval': log_interval,
+            'decay_exponent': decay_exponent,
+            'mutation_probability': mutation_probability,
             'exploration_interval': exploration_interval,
             'n_exploration_points': n_exploration_points,
             'excellent_error': excellent_error,
