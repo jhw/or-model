@@ -67,8 +67,8 @@ def minimize(objective, x0, bounds=None, options=None):
             logger.info(f"Generation {generation + 1}/{max_iter}: best={best_fitness:.6f}, avg={avg_fitness:.6f}, mutation={current_mutation:.4f}")
         
         # Check convergence
-        excellent_error = options.get('excellent_error', 0.03)
-        max_error = options.get('max_error', 0.05)
+        excellent_error = options.get('excellent_error')
+        max_error = options.get('max_error')
         
         if best_fitness <= excellent_error:
             logger.info(f"Excellent result achieved at generation {generation + 1}: error {best_fitness:.6f} ≤ {excellent_error}")
